@@ -1,21 +1,19 @@
 package com.medconnect.backend.entity;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "prescriptions")
+@Document(collection = "prescriptions")
 public class Prescription {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "appointment_id", nullable = false)
+    @DocumentReference
     private Appointment appointment;
 
-    @Column(nullable = false, length = 1000)
     private String medicationDetails;
 
     private String instructions;
@@ -24,8 +22,8 @@ public class Prescription {
 
     public Prescription() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public Appointment getAppointment() { return appointment; }
     public void setAppointment(Appointment appointment) { this.appointment = appointment; }
     public String getMedicationDetails() { return medicationDetails; }
@@ -35,7 +33,6 @@ public class Prescription {
     public LocalDateTime getIssuedAt() { return issuedAt; }
     public void setIssuedAt(LocalDateTime issuedAt) { this.issuedAt = issuedAt; }
 
-    @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean isFulfilled = false;
 
     private String verificationCode;

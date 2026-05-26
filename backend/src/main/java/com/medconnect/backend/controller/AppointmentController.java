@@ -16,12 +16,12 @@ public class AppointmentController {
     }
 
     @GetMapping("/patient/{patientId}")
-    public List<Appointment> getPatientAppointments(@PathVariable Long patientId) {
+    public List<Appointment> getPatientAppointments(@PathVariable String patientId) {
         return appointmentService.getAppointmentsForPatient(patientId);
     }
 
     @GetMapping("/doctor/{doctorId}")
-    public List<Appointment> getDoctorAppointments(@PathVariable Long doctorId) {
+    public List<Appointment> getDoctorAppointments(@PathVariable String doctorId) {
         return appointmentService.getAppointmentsForDoctor(doctorId);
     }
 
@@ -31,13 +31,13 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/{id}")
-    public org.springframework.http.ResponseEntity<?> deleteAppointment(@PathVariable Long id) {
+    public org.springframework.http.ResponseEntity<?> deleteAppointment(@PathVariable String id) {
         appointmentService.deleteAppointment(id);
         return org.springframework.http.ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{id}/complete")
-    public Appointment completeAppointment(@PathVariable Long id) {
+    public Appointment completeAppointment(@PathVariable String id) {
         return appointmentService.completeAppointment(id);
     }
 }

@@ -1,6 +1,8 @@
 package com.medconnect.backend.service;
 
+import com.medconnect.backend.entity.Appointment;
 import com.medconnect.backend.entity.Prescription;
+import com.medconnect.backend.repository.AppointmentRepository;
 import com.medconnect.backend.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -8,9 +10,11 @@ import java.util.List;
 @Service
 public class PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
+    private final AppointmentRepository appointmentRepository;
 
-    public PrescriptionService(PrescriptionRepository prescriptionRepository) {
+    public PrescriptionService(PrescriptionRepository prescriptionRepository, AppointmentRepository appointmentRepository) {
         this.prescriptionRepository = prescriptionRepository;
+        this.appointmentRepository = appointmentRepository;
     }
 
     private String generateRandomAlphanumeric(int length) {
@@ -31,15 +35,16 @@ public class PrescriptionService {
         return prescriptionRepository.save(prescription);
     }
     
-    public List<Prescription> getPrescriptionsForPatient(Long patientId) {
-        return prescriptionRepository.findByAppointmentPatientId(patientId);
+    public List<Prescription> getPrescriptionsForPatient(String patientId) {
+        List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
+        return prescriptionRepository.findByAppointmentIn(appointments);
     }
 
     public List<Prescription> getAllPrescriptions() {
         return prescriptionRepository.findAll();
     }
 
-    public Prescription fulfillPrescription(Long id) {
+    public Prescription fulfillPrescription(String id) {
         Prescription p = prescriptionRepository.findById(id).orElseThrow(() -> new RuntimeException("Prescription not found"));
         p.setIsFulfilled(true);
         return prescriptionRepository.save(p);

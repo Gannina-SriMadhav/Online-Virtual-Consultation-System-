@@ -1,10 +1,10 @@
 package com.medconnect.backend.repository;
 
 import com.medconnect.backend.entity.Appointment;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
-public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
-    List<Appointment> findByPatientId(Long patientId);
-    List<Appointment> findByDoctorId(Long doctorId);
+public interface AppointmentRepository extends MongoRepository<Appointment, String> {
+    List<Appointment> findByPatientId(String patientId);
+    List<Appointment> findByDoctorId(String doctorId);
 }

@@ -13,11 +13,11 @@ public class AppointmentService {
         this.appointmentRepository = appointmentRepository;
     }
 
-    public List<Appointment> getAppointmentsForPatient(Long patientId) {
+    public List<Appointment> getAppointmentsForPatient(String patientId) {
         return appointmentRepository.findByPatientId(patientId);
     }
     
-    public List<Appointment> getAppointmentsForDoctor(Long doctorId) {
+    public List<Appointment> getAppointmentsForDoctor(String doctorId) {
         return appointmentRepository.findByDoctorId(doctorId);
     }
     
@@ -25,11 +25,11 @@ public class AppointmentService {
         return appointmentRepository.save(appointment);
     }
 
-    public void deleteAppointment(Long appointmentId) {
+    public void deleteAppointment(String appointmentId) {
         appointmentRepository.deleteById(appointmentId);
     }
 
-    public Appointment completeAppointment(Long appointmentId) {
+    public Appointment completeAppointment(String appointmentId) {
         return appointmentRepository.findById(appointmentId).map(appointment -> {
             appointment.setStatus("COMPLETED");
             return appointmentRepository.save(appointment);

@@ -21,7 +21,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/patient/{patientId}")
-    public List<Prescription> getPatientPrescriptions(@PathVariable Long patientId) {
+    public List<Prescription> getPatientPrescriptions(@PathVariable String patientId) {
         return prescriptionService.getPrescriptionsForPatient(patientId);
     }
 
@@ -31,7 +31,7 @@ public class PrescriptionController {
     }
 
     @PutMapping("/{id}/fulfill")
-    public Prescription fulfillPrescription(@PathVariable Long id) {
+    public Prescription fulfillPrescription(@PathVariable String id) {
         return prescriptionService.fulfillPrescription(id);
     }
 

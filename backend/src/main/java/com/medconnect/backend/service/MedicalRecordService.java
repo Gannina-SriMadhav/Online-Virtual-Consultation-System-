@@ -17,7 +17,7 @@ public class MedicalRecordService {
         return medicalRecordRepository.save(record);
     }
 
-    public List<MedicalRecord> getRecordsForPatient(Long patientId) {
+    public List<MedicalRecord> getRecordsForPatient(String patientId) {
         return medicalRecordRepository.findByPatientId(patientId);
     }
 }

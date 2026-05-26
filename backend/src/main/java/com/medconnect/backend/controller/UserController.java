@@ -11,6 +11,7 @@ import com.medconnect.backend.repository.PrescriptionRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/users")
@@ -41,39 +42,47 @@ public class UserController {
     }
 
     @PutMapping("/{id}/approve")
-    public User approveUser(@PathVariable Long id) {
+    public User approveUser(@PathVariable String id) {
         User user = userRepository.findById(id).orElseThrow();
         user.setIsApproved(true);
         return userRepository.save(user);
     }
 
     @DeleteMapping("/{id}")
-    @org.springframework.transaction.annotation.Transactional
-    public void deleteUser(@PathVariable Long id) {
-        // Delete all prescriptions related to this user's appointments
-        List<Prescription> prescriptionsAsPatient = prescriptionRepository.findByAppointmentPatientId(id);
-        prescriptionRepository.deleteAll(prescriptionsAsPatient);
-        List<Prescription> prescriptionsAsDoctor = prescriptionRepository.findByAppointmentDoctorId(id);
-        prescriptionRepository.deleteAll(prescriptionsAsDoctor);
-
-        // Delete all appointments related to this user
+    public void deleteUser(@PathVariable String id) {
+        // Find all appointments associated with this user (either as patient or doctor)
         List<Appointment> appointmentsAsPatient = appointmentRepository.findByPatientId(id);
-        appointmentRepository.deleteAll(appointmentsAsPatient);
         List<Appointment> appointmentsAsDoctor = appointmentRepository.findByDoctorId(id);
-        appointmentRepository.deleteAll(appointmentsAsDoctor);
+
+        List<Appointment> allAppointments = new ArrayList<>();
+        if (appointmentsAsPatient != null) allAppointments.addAll(appointmentsAsPatient);
+        if (appointmentsAsDoctor != null) allAppointments.addAll(appointmentsAsDoctor);
+
+        // Delete all prescriptions related to these appointments
+        if (!allAppointments.isEmpty()) {
+            List<Prescription> prescriptions = prescriptionRepository.findByAppointmentIn(allAppointments);
+            if (prescriptions != null && !prescriptions.isEmpty()) {
+                prescriptionRepository.deleteAll(prescriptions);
+            }
+            appointmentRepository.deleteAll(allAppointments);
+        }
 
         // Delete all medical records related to this user
         List<MedicalRecord> recordsAsPatient = medicalRecordRepository.findByPatientId(id);
-        medicalRecordRepository.deleteAll(recordsAsPatient);
+        if (recordsAsPatient != null && !recordsAsPatient.isEmpty()) {
+            medicalRecordRepository.deleteAll(recordsAsPatient);
+        }
         List<MedicalRecord> recordsAsDoctor = medicalRecordRepository.findByDoctorId(id);
-        medicalRecordRepository.deleteAll(recordsAsDoctor);
+        if (recordsAsDoctor != null && !recordsAsDoctor.isEmpty()) {
+            medicalRecordRepository.deleteAll(recordsAsDoctor);
+        }
 
         // Delete the user itself
         userRepository.deleteById(id);
     }
 
     @PutMapping("/{id}")
-    public org.springframework.http.ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+    public org.springframework.http.ResponseEntity<?> updateUser(@PathVariable String id, @RequestBody User updatedUser) {
         User user = userRepository.findById(id).orElseThrow();
         
         // Email uniqueness check
@@ -115,7 +124,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/rate")
-    public User rateUser(@PathVariable Long id, @RequestParam Double ratingScore) {
+    public User rateUser(@PathVariable String id, @RequestParam Double ratingScore) {
         User user = userRepository.findById(id).orElseThrow();
         double currentTotal = user.getRating() * user.getRatingCount();
         int newCount = user.getRatingCount() + 1;

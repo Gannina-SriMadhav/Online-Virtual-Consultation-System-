@@ -1,33 +1,30 @@
 package com.medconnect.backend.entity;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "appointments")
+@Document(collection = "appointments")
 public class Appointment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id", nullable = false)
+    @DocumentReference
     private User patient;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id", nullable = false)
+    @DocumentReference
     private User doctor;
 
-    @Column(nullable = false)
     private LocalDateTime appointmentDate;
 
     private String status;
 
     public Appointment() {}
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public User getPatient() { return patient; }
     public void setPatient(User patient) { this.patient = patient; }
     public User getDoctor() { return doctor; }

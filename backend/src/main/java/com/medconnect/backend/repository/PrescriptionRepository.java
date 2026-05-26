@@ -1,13 +1,12 @@
 package com.medconnect.backend.repository;
 
 import com.medconnect.backend.entity.Prescription;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.medconnect.backend.entity.Appointment;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
-
 import java.util.Optional;
 
-public interface PrescriptionRepository extends JpaRepository<Prescription, Long> {
-    List<Prescription> findByAppointmentDoctorId(Long doctorId);
-    List<Prescription> findByAppointmentPatientId(Long patientId);
+public interface PrescriptionRepository extends MongoRepository<Prescription, String> {
+    List<Prescription> findByAppointmentIn(List<Appointment> appointments);
     Optional<Prescription> findByVerificationCode(String verificationCode);
 }
