@@ -38,6 +38,10 @@ public class Prescription {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean isFulfilled = false;
 
+    private String verificationCode;
+
     public Boolean getIsFulfilled() { return isFulfilled; }
     public void setIsFulfilled(Boolean isFulfilled) { this.isFulfilled = isFulfilled; }
+    public String getVerificationCode() { return verificationCode; }
+    public void setVerificationCode(String verificationCode) { this.verificationCode = verificationCode; }
 }

@@ -19,7 +19,15 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public User register(@RequestBody User user) {
+    public org.springframework.http.ResponseEntity<?> register(@RequestBody User user) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return org.springframework.http.ResponseEntity.status(409).body("This email address is already registered. Please log in.");
+        }
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
+            if (userRepository.findByPhoneNumber(user.getPhoneNumber().trim()).isPresent()) {
+                return org.springframework.http.ResponseEntity.status(409).body("This mobile number is already registered. Please log in.");
+            }
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         
         if ("DOCTOR".equals(user.getRole().name()) || "PHARMACIST".equals(user.getRole().name())) {
@@ -28,13 +36,15 @@ public class AuthController {
              user.setIsApproved(true);
         }
         
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        return org.springframework.http.ResponseEntity.ok(saved);
     }
 
     @PostMapping("/login")
     public org.springframework.http.ResponseEntity<?> login(@RequestBody User loginRequest) {
         try {
-            User user = userRepository.findByEmail(loginRequest.getEmail())
+            String identifier = loginRequest.getEmail();
+            User user = userRepository.findByEmailOrPhoneNumber(identifier, identifier)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             
             if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {

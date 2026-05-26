@@ -8,8 +8,8 @@ const AdminLogin = () => {
 
   const handleAdminLogin = (e) => {
     e.preventDefault();
-    // Default system admin credentials bypass for demo purposes
     if(email === 'admin@medconnect.com' && password === 'admin123') {
+      localStorage.setItem('userEmail', 'admin@medconnect.com');
       navigate('/admin-dashboard');
     } else {
       alert("Invalid Admin Credentials. Access Denied.");
@@ -17,30 +17,50 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="landing-wrapper" style={{ justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', background: 'var(--surface)', padding: '20px', position: 'relative' }}>
+      {/* Back Button */}
       <div style={{ position: 'absolute', top: '40px', left: '40px' }}>
-        <Link to="/" className="glow-button" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}>
+        <Link to="/" className="btn btn-ghost" style={{ background: 'var(--white)' }}>
           ← Back to Network
         </Link>
       </div>
 
-      <div className="glass-card" style={{ padding: '3rem', width: '400px', textAlign: 'center', border: '1px solid #ef4444', boxShadow: '0 0 40px rgba(239, 68, 68, 0.2)' }}>
-        <div style={{ marginBottom: '1.5rem', fontSize: '2.5rem' }}>🔒</div>
-        <h2 style={{ marginBottom: '2rem', fontSize: '1.8rem', color: '#ef4444' }}>System Administrator</h2>
+      <div className="glass-card" style={{ padding: '3.5rem 3rem', width: '100%', maxWidth: '420px', border: '1.5px solid var(--border)' }}>
+        <div style={{ marginBottom: '1rem', fontSize: '2.5rem', textAlign: 'center' }}>🔒</div>
+        <h2 style={{ marginBottom: '0.5rem', fontSize: '2.2rem', color: 'var(--ink)', textAlign: 'center' }} className="serif-text">System Administrator</h2>
+        <p style={{ color: 'var(--ink-soft)', fontSize: '0.95rem', textAlign: 'center', marginBottom: '2.5rem' }}>Access root control & provider credentialing</p>
         
         <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <input 
-            type="email" placeholder="Admin Email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            style={{ padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(239, 68, 68, 0.3)' }}
-          />
-          <input 
-            type="password" placeholder="Passcode" required value={password} onChange={(e) => setPassword(e.target.value)}
-            style={{ padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(239, 68, 68, 0.3)' }}
-          />
-          <button type="submit" className="glow-button" style={{ marginTop: '1rem', background: '#ef4444', border: 'none', color: 'white' }}>Authorize Override</button>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>Admin Email</label>
+            <input 
+              type="email" 
+              placeholder="admin@medconnect.com" 
+              required 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ width: '100%' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>Passcode</label>
+            <input 
+              type="password" 
+              placeholder="Enter passcode" 
+              required 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ width: '100%' }}
+            />
+          </div>
+          
+          <button type="submit" className="glow-button" style={{ marginTop: '0.8rem', width: '100%', background: 'var(--ink)', boxShadow: '0 4px 14px rgba(11,18,32,0.15)' }}>Authorize Override</button>
         </form>
       </div>
     </div>
   );
 };
+
 export default AdminLogin;

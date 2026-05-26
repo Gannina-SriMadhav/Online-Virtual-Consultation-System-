@@ -26,13 +26,14 @@ public class User {
     private Integer age;
     private String specialist;
     private String licenseNumber;
+    private String phoneNumber;
     
     @Column(columnDefinition = "LONGTEXT")
     private String certificateData;
 
     public User() {}
 
-    public User(Long id, String name, String email, String password, RoleEnum role, Integer age, String specialist, String licenseNumber, String certificateData) {
+    public User(Long id, String name, String email, String password, RoleEnum role, Integer age, String specialist, String licenseNumber, String certificateData, String phoneNumber) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -42,6 +43,7 @@ public class User {
         this.specialist = specialist;
         this.licenseNumber = licenseNumber;
         this.certificateData = certificateData;
+        this.phoneNumber = phoneNumber;
     }
 
     public Long getId() { return id; }
@@ -62,10 +64,23 @@ public class User {
     public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
     public String getCertificateData() { return certificateData; }
     public void setCertificateData(String certificateData) { this.certificateData = certificateData; }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
     @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean isApproved = true;
 
     public Boolean getIsApproved() { return isApproved; }
     public void setIsApproved(Boolean isApproved) { this.isApproved = isApproved; }
+
+    @Column(nullable = false, columnDefinition = "double default 5.0")
+    private Double rating = 5.0;
+
+    @Column(nullable = false, columnDefinition = "int default 1")
+    private Integer ratingCount = 1;
+
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
+    public Integer getRatingCount() { return ratingCount; }
+    public void setRatingCount(Integer ratingCount) { this.ratingCount = ratingCount; }
 }

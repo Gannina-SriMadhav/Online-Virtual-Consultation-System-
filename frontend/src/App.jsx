@@ -4,7 +4,6 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminLogin from './pages/AdminLogin';
-import ThemeToggle from './components/ThemeToggle';
 import AdminDashboard from './pages/AdminDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import PatientDashboard from './pages/PatientDashboard';
@@ -17,7 +16,6 @@ function App() {
     <Router>
       <div className="app-container">
         <Toaster position="top-right" />
-        <ThemeToggle />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />

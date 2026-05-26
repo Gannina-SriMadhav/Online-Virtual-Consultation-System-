@@ -27,6 +27,11 @@ public class MedicalRecord {
 
     private LocalDateTime recordDate;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String documentData;
+
+    private String documentName;
+
     public MedicalRecord() {}
 
     public Long getId() { return id; }
@@ -41,4 +46,8 @@ public class MedicalRecord {
     public void setTreatmentPlan(String treatmentPlan) { this.treatmentPlan = treatmentPlan; }
     public LocalDateTime getRecordDate() { return recordDate; }
     public void setRecordDate(LocalDateTime recordDate) { this.recordDate = recordDate; }
+    public String getDocumentData() { return documentData; }
+    public void setDocumentData(String documentData) { this.documentData = documentData; }
+    public String getDocumentName() { return documentName; }
+    public void setDocumentName(String documentName) { this.documentName = documentName; }
 }

@@ -34,4 +34,9 @@ public class PrescriptionController {
     public Prescription fulfillPrescription(@PathVariable Long id) {
         return prescriptionService.fulfillPrescription(id);
     }
+
+    @GetMapping("/verify/{code}")
+    public Prescription verifyPrescriptionCode(@PathVariable String code) {
+        return prescriptionService.getPrescriptionByVerificationCode(code);
+    }
 }

@@ -1,0 +1,49 @@
+📁 BackendApplication.java
+
+👉 Main file — starts your whole application.
+
+⚙️ config (SecurityConfig.java)
+
+👉 Handles security (login rules, authentication, permissions).
+
+🎮 controller
+
+👉 Handles HTTP requests (API calls) from frontend
+
+UserController → user actions (register/login)
+AppointmentController → manage appointments
+MedicalRecordController → patient records
+PrescriptionController → prescriptions
+AuthController → authentication
+WebController → general web endpoints
+🧱 entity
+
+👉 Defines database tables (models)
+
+User → user data
+Appointment → appointment data
+MedicalRecord → medical history
+Prescription → medicines
+RoleEnum → user roles (admin, doctor, etc.)
+🗄️ repository
+
+👉 Talks to database (CRUD operations)
+
+Save, delete, update, fetch data
+🔧 service
+
+👉 Contains business logic (main work happens here)
+
+Processes data before sending to controller/repository
+📂 resources
+application.properties → database config & settings
+static → CSS, JS files
+templates → HTML pages
+🧪 test
+
+👉 For testing your code
+
+🔁 Flow (VERY IMPORTANT)
+
+👉 Controller → Service → Repository → Database
+👉 Database → Repository → Service → Controller → Response
