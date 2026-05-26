@@ -356,11 +356,11 @@ const PatientDashboard = () => {
               </div>
               <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', background: 'var(--white)' }}>
                  <h3 className="serif-text" style={{ fontSize: '1.6rem', marginBottom: '0.5rem', color: 'var(--coral)' }}>Medication</h3>
-                 <button className="glow-button" onClick={() => setShowScriptsModal(true)} style={{ background: 'transparent', border: '1.5px solid var(--coral)', color: 'var(--coral)', boxShadow: 'none', width: '100%', padding: '8px 16px', fontSize: '13px' }}>View Scripts</button>
+                 <button className="btn-ghost" onClick={() => setShowScriptsModal(true)} style={{ background: 'transparent', border: '1.5px solid var(--coral)', color: 'var(--coral)', boxShadow: 'none', width: '100%', padding: '8px 16px', fontSize: '13px', height: 'auto' }}>View Scripts</button>
               </div>
               <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', background: 'var(--white)' }}>
                  <h3 className="serif-text" style={{ fontSize: '1.6rem', marginBottom: '0.5rem', color: 'var(--violet)' }}>History</h3>
-                 <button className="glow-button" onClick={() => setShowRecordsModal(true)} style={{ background: 'transparent', border: '1.5px solid var(--violet)', color: 'var(--violet)', boxShadow: 'none', width: '100%', padding: '8px 16px', fontSize: '13px' }}>View Records</button>
+                 <button className="btn-ghost" onClick={() => setShowRecordsModal(true)} style={{ background: 'transparent', border: '1.5px solid var(--violet)', color: 'var(--violet)', boxShadow: 'none', width: '100%', padding: '8px 16px', fontSize: '13px', height: 'auto' }}>View Records</button>
               </div>
             </div>
 

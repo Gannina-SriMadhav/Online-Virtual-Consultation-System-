@@ -325,12 +325,12 @@ const DoctorDashboard = () => {
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>Write digital e-prescriptions or add notes directly to your patient records.</p>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <li>
-                <button onClick={() => setShowPrescriptionModal(true)} className="glow-button" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--sky)', color: 'var(--sky)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <button onClick={() => setShowPrescriptionModal(true)} className="btn-ghost" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--sky)', color: 'var(--sky)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', height: 'auto', padding: '10px 16px' }}>
                   <FilePlus size={18} /> Write E-Prescription
                 </button>
               </li>
               <li>
-                <button onClick={() => setShowRecordModal(true)} className="glow-button" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--coral)', color: 'var(--coral)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <button onClick={() => setShowRecordModal(true)} className="btn-ghost" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--coral)', color: 'var(--coral)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', height: 'auto', padding: '10px 16px' }}>
                   <FilePlus size={18} /> Update Medical Record
                 </button>
               </li>
