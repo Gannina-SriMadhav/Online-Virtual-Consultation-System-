@@ -182,7 +182,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
       e.preventDefault();
       try {
           await issuePrescription({
-              appointment: { id: parseInt(appointmentId) },
+              appointment: { id: appointmentId },
               medicationDetails: prescriptionData.medicationDetails,
               instructions: prescriptionData.instructions,
               issuedAt: new Date().toISOString()
@@ -199,7 +199,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
       try {
           const payload = {
               doctor: { id: doctorId },
-              patient: { id: parseInt(patientId) },
+              patient: { id: patientId },
               diagnosis: recordData.diagnosis,
               treatmentPlan: recordData.treatmentPlan,
               recordDate: new Date().toISOString()
@@ -242,8 +242,8 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
     setUploadingReport(true);
     try {
       await addMedicalRecord({
-        patient: { id: parseInt(patientId) },
-        doctor: { id: parseInt(doctorId) },
+        patient: { id: patientId },
+        doctor: { id: doctorId },
         diagnosis: `[REPORT] ${newReport.name || 'Blood Report / Document'}`,
         treatmentPlan: 'Uploaded during live video consultation room session',
         documentName: newReport.name || 'document',

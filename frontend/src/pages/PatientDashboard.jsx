@@ -164,7 +164,7 @@ const PatientDashboard = () => {
     try {
       await createAppointment({
         patient: { id: patientId },
-        doctor: { id: parseInt(bookData.doctorId) },
+        doctor: { id: bookData.doctorId },
         appointmentDate: new Date(bookData.date).toISOString(),
         status: 'CONFIRMED'
       });

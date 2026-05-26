@@ -161,7 +161,7 @@ const DoctorDashboard = () => {
     e.preventDefault();
     try {
       await issuePrescription({
-        appointment: { id: parseInt(rxData.appointmentId) },
+        appointment: { id: rxData.appointmentId },
         medicationDetails: rxData.medicationDetails,
         instructions: rxData.instructions,
         issuedAt: new Date().toISOString()
@@ -177,7 +177,7 @@ const DoctorDashboard = () => {
     try {
       await addMedicalRecord({
         doctor: { id: doctorId },
-        patient: { id: parseInt(recordData.patientId) },
+        patient: { id: recordData.patientId },
         diagnosis: recordData.diagnosis,
         treatmentPlan: recordData.treatmentPlan,
         recordDate: new Date().toISOString()
