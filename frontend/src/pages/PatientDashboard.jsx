@@ -1,8 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getPatientAppointments, getPatientRecords, createAppointment, getAllUsers, getAllPrescriptions, cancelAppointment, updateUserProfile } from '../api';
+import { getPatientAppointments, getPatientRecords, createAppointment, getAllUsers, getAllPrescriptions, cancelAppointment, updateUserProfile, getDoctorConsultations } from '../api';
 import toast from 'react-hot-toast';
 import VideoConsultation from '../components/VideoConsultation';
 import { Video, XCircle, Calendar, FileText, Pill, LogOut } from 'lucide-react';
+
+const TIME_SLOTS = [
+  { label: '08:00 AM (Emergency Case)', time: '08:00' },
+  { label: '10:00 AM', time: '10:00' },
+  { label: '10:30 AM', time: '10:30' },
+  { label: '11:00 AM', time: '11:00' },
+  { label: '11:30 AM', time: '11:30' },
+  { label: '12:00 PM', time: '12:00' },
+  { label: '12:30 PM', time: '12:30' },
+  { label: '02:00 PM', time: '14:00' },
+  { label: '02:30 PM', time: '14:30' },
+  { label: '03:00 PM', time: '15:00' },
+  { label: '03:30 PM', time: '15:30' },
+  { label: '04:00 PM', time: '16:00' },
+  { label: '04:30 PM', time: '16:30' },
+  { label: '05:00 PM', time: '17:00' },
+  { label: '05:30 PM', time: '17:30' },
+  { label: '06:00 PM', time: '18:00' }
+];
 
 const PatientDashboard = () => {
   const [appointments, setAppointments] = useState([]);
@@ -15,6 +34,10 @@ const PatientDashboard = () => {
   const [showRecordsModal, setShowRecordsModal] = useState(false);
   
   const [bookData, setBookData] = useState({ doctorId: '', date: '' });
+  const [bookDate, setBookDate] = useState('');
+  const [bookSlot, setBookSlot] = useState('');
+  const [doctorAppointments, setDoctorAppointments] = useState([]);
+
   const [patientName, setPatientName] = useState('');
   const [patientId, setPatientId] = useState(null);
   const [patientAge, setPatientAge] = useState('');
@@ -159,17 +182,73 @@ const PatientDashboard = () => {
     });
   };
 
+  const loadDoctorAppointments = async (docId) => {
+    if (!docId) {
+      setDoctorAppointments([]);
+      return;
+    }
+    try {
+      const appts = await getDoctorConsultations(docId);
+      setDoctorAppointments(appts || []);
+    } catch (err) {
+      console.error("Failed to load doctor appointments", err);
+      setDoctorAppointments([]);
+    }
+  };
+
+  useEffect(() => {
+    if (bookData.doctorId) {
+      loadDoctorAppointments(bookData.doctorId);
+    } else {
+      setDoctorAppointments([]);
+    }
+  }, [bookData.doctorId]);
+
+  const isSlotBooked = (slotTime) => {
+    if (!bookDate || !doctorAppointments.length) return false;
+    return doctorAppointments.some(appt => {
+      if (appt.status === 'CANCELLED') return false;
+      const apptDateObj = new Date(appt.appointmentDate);
+      const yyyy = apptDateObj.getFullYear();
+      const mm = String(apptDateObj.getMonth() + 1).padStart(2, '0');
+      const dd = String(apptDateObj.getDate()).padStart(2, '0');
+      const apptLocalDateStr = `${yyyy}-${mm}-${dd}`;
+      
+      const hours = String(apptDateObj.getHours()).padStart(2, '0');
+      const minutes = String(apptDateObj.getMinutes()).padStart(2, '0');
+      const apptLocalTimeStr = `${hours}:${minutes}`;
+      
+      return apptLocalDateStr === bookDate && apptLocalTimeStr === slotTime;
+    });
+  };
+
+  const handleOpenBookingModal = () => {
+    setBookData({ doctorId: '', date: '' });
+    setBookDate('');
+    setBookSlot('');
+    setDoctorAppointments([]);
+    setShowModal(true);
+  };
+
   const handleBook = async (e) => {
     e.preventDefault();
+    if (!bookDate || !bookSlot) {
+      toast.error("Please select both a date and a time slot.");
+      return;
+    }
     try {
+      const localDateTimeStr = `${bookDate}T${bookSlot}`;
+      const localDate = new Date(localDateTimeStr);
       await createAppointment({
         patient: { id: patientId },
         doctor: { id: bookData.doctorId },
-        appointmentDate: new Date(bookData.date).toISOString(),
+        appointmentDate: localDate.toISOString(),
         status: 'CONFIRMED'
       });
       setShowModal(false);
       setBookData({ doctorId: '', date: '' });
+      setBookDate('');
+      setBookSlot('');
       loadData();
       toast.success("Appointment Successfully Booked!");
     } catch (err) {
@@ -273,15 +352,15 @@ const PatientDashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.25rem' }}>
               <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', background: 'var(--white)' }}>
                  <h3 className="serif-text" style={{ fontSize: '1.6rem', marginBottom: '0.5rem', color: 'var(--sky)' }}>Schedule</h3>
-                 <button className="glow-button" style={{ width: '100%', padding: '8px 16px', fontSize: '13px' }} onClick={() => setShowModal(true)}>Book Call</button>
+                 <button className="glow-button" style={{ width: '100%', padding: '8px 16px', fontSize: '13px' }} onClick={handleOpenBookingModal}>Book Call</button>
               </div>
               <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', background: 'var(--white)' }}>
                  <h3 className="serif-text" style={{ fontSize: '1.6rem', marginBottom: '0.5rem', color: 'var(--coral)' }}>Medication</h3>
-                 <button className="glow-button" onClick={() => setShowScriptsModal(true)} style={{ background: 'transparent', border: '1.5px solid var(--coral)', color: 'var(--coral) !important', boxShadow: 'none', width: '100%', padding: '8px 16px', fontSize: '13px' }}>View Scripts</button>
+                 <button className="glow-button" onClick={() => setShowScriptsModal(true)} style={{ background: 'transparent', border: '1.5px solid var(--coral)', color: 'var(--coral)', boxShadow: 'none', width: '100%', padding: '8px 16px', fontSize: '13px' }}>View Scripts</button>
               </div>
               <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', background: 'var(--white)' }}>
                  <h3 className="serif-text" style={{ fontSize: '1.6rem', marginBottom: '0.5rem', color: 'var(--violet)' }}>History</h3>
-                 <button className="glow-button" onClick={() => setShowRecordsModal(true)} style={{ background: 'transparent', border: '1.5px solid var(--violet)', color: 'var(--violet) !important', boxShadow: 'none', width: '100%', padding: '8px 16px', fontSize: '13px' }}>View Records</button>
+                 <button className="glow-button" onClick={() => setShowRecordsModal(true)} style={{ background: 'transparent', border: '1.5px solid var(--violet)', color: 'var(--violet)', boxShadow: 'none', width: '100%', padding: '8px 16px', fontSize: '13px' }}>View Records</button>
               </div>
             </div>
 
@@ -445,8 +524,20 @@ const PatientDashboard = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>Appointment Date and Time</label>
-                <input type="datetime-local" required value={bookData.date} onChange={e => setBookData({...bookData, date: e.target.value})} style={{ width: '100%' }} />
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>Select Date</label>
+                <input type="date" required value={bookDate} onChange={e => setBookDate(e.target.value)} style={{ width: '100%' }} min={new Date().toISOString().split('T')[0]} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>Select Time Slot</label>
+                <select required value={bookSlot} onChange={e => setBookSlot(e.target.value)} style={{ width: '100%' }} disabled={!bookDate || !bookData.doctorId}>
+                  <option value="" disabled>{!bookData.doctorId ? 'Please select a doctor first' : (!bookDate ? 'Please select a date first' : 'Select Time Slot')}</option>
+                  {TIME_SLOTS.map(slot => (
+                    <option key={slot.time} value={slot.time} disabled={isSlotBooked(slot.time)}>
+                      {slot.label} {isSlotBooked(slot.time) ? ' (Booked)' : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>

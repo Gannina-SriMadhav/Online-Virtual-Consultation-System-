@@ -3,7 +3,7 @@ package com.medconnect.backend.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Document(collection = "prescriptions")
 public class Prescription {
@@ -18,7 +18,7 @@ public class Prescription {
 
     private String instructions;
 
-    private LocalDateTime issuedAt;
+    private Instant issuedAt;
 
     public Prescription() {}
 
@@ -30,8 +30,8 @@ public class Prescription {
     public void setMedicationDetails(String medicationDetails) { this.medicationDetails = medicationDetails; }
     public String getInstructions() { return instructions; }
     public void setInstructions(String instructions) { this.instructions = instructions; }
-    public LocalDateTime getIssuedAt() { return issuedAt; }
-    public void setIssuedAt(LocalDateTime issuedAt) { this.issuedAt = issuedAt; }
+    public Instant getIssuedAt() { return issuedAt; }
+    public void setIssuedAt(Instant issuedAt) { this.issuedAt = issuedAt; }
 
     private Boolean isFulfilled = false;
 

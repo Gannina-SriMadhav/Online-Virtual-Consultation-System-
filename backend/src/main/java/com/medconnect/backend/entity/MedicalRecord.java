@@ -3,7 +3,7 @@ package com.medconnect.backend.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Document(collection = "medical_records")
 public class MedicalRecord {
@@ -21,7 +21,7 @@ public class MedicalRecord {
 
     private String treatmentPlan;
 
-    private LocalDateTime recordDate;
+    private Instant recordDate;
 
     private String documentData;
 
@@ -39,8 +39,8 @@ public class MedicalRecord {
     public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
     public String getTreatmentPlan() { return treatmentPlan; }
     public void setTreatmentPlan(String treatmentPlan) { this.treatmentPlan = treatmentPlan; }
-    public LocalDateTime getRecordDate() { return recordDate; }
-    public void setRecordDate(LocalDateTime recordDate) { this.recordDate = recordDate; }
+    public Instant getRecordDate() { return recordDate; }
+    public void setRecordDate(Instant recordDate) { this.recordDate = recordDate; }
     public String getDocumentData() { return documentData; }
     public void setDocumentData(String documentData) { this.documentData = documentData; }
     public String getDocumentName() { return documentName; }

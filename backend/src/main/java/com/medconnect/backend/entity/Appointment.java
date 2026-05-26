@@ -3,7 +3,7 @@ package com.medconnect.backend.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Document(collection = "appointments")
 public class Appointment {
@@ -17,7 +17,7 @@ public class Appointment {
     @DocumentReference
     private User doctor;
 
-    private LocalDateTime appointmentDate;
+    private Instant appointmentDate;
 
     private String status;
 
@@ -29,8 +29,8 @@ public class Appointment {
     public void setPatient(User patient) { this.patient = patient; }
     public User getDoctor() { return doctor; }
     public void setDoctor(User doctor) { this.doctor = doctor; }
-    public LocalDateTime getAppointmentDate() { return appointmentDate; }
-    public void setAppointmentDate(LocalDateTime appointmentDate) { this.appointmentDate = appointmentDate; }
+    public Instant getAppointmentDate() { return appointmentDate; }
+    public void setAppointmentDate(Instant appointmentDate) { this.appointmentDate = appointmentDate; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 }

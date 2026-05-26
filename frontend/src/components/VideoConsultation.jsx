@@ -333,10 +333,10 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                 </div>
              </div>
           ) : (
-             <div style={{ display: 'flex', width: '100%', height: '100%', padding: '20px', gap: '20px', boxSizing: 'border-box', background: '#0b1220', paddingBottom: '100px' }}>
+             <div className="video-container" style={{ display: 'flex', width: '100%', height: '100%', padding: '20px', gap: '20px', boxSizing: 'border-box', background: '#0b1220', paddingBottom: '100px' }}>
                 
                 {/* Local Video - Left Side (Your Video & Your Options Overlay) */}
-                <div className="glass-card" style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#1e293b', borderRadius: '20px', border: '2px solid rgba(255,255,255,0.05)' }}>
+                <div className="glass-card video-box" style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#1e293b', borderRadius: '20px', border: '2px solid rgba(255,255,255,0.05)' }}>
                    <video 
                       ref={localVideoRef} 
                       autoPlay 
@@ -434,7 +434,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                 </div>
 
                 {/* Remote Video - Right Side (Other Participant) */}
-                <div className="glass-card" style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#1e293b', borderRadius: '20px', border: '2px solid rgba(255,255,255,0.05)' }}>
+                <div className="glass-card video-box" style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#1e293b', borderRadius: '20px', border: '2px solid rgba(255,255,255,0.05)' }}>
                    <video 
                       ref={remoteVideoRef} 
                       autoPlay 
@@ -454,9 +454,13 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                 
                 {/* Clinical Form Sliding Panel (Doctors Only) - Rendered outside to prevent layout clipping */}
                 {showToolsPanel && (
-                    <div className="glass-card" style={{ 
+                    <div className="glass-card tools-panel" style={{ 
                         width: '380px', display: 'flex', flexDirection: 'column', background: 'var(--white)', borderRadius: '20px', border: '1px solid var(--border)', overflow: 'hidden', height: '100%', zIndex: 20
                     }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--ink)' }}>{isDoctor ? 'Clinical Workspace' : 'Patient Workspace'}</span>
+                            <button onClick={() => setShowToolsPanel(false)} style={{ background: 'transparent', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>Close ✕</button>
+                        </div>
                         <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
                             {isDoctor ? (
                                 <>
@@ -599,9 +603,12 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                       <option value="2">⭐⭐ Fair (2/5)</option>
                       <option value="1">⭐ Poor (1/5)</option>
                    </select>
-                   <div style={{ display: 'flex', gap: '12px', marginTop: '0.5rem', justifyContent: 'center' }}>
-                      <button type="submit" className="glow-button" style={{ flex: 1, padding: '10px 20px', height: '42px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Submit Rating</button>
-                      <button type="button" className="btn-ghost" style={{ flex: 1, height: '42px', fontSize: '14px' }} onClick={onClose}>Skip</button>
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '0.5rem' }}>
+                      <button type="submit" className="glow-button" style={{ width: '100%', padding: '10px 20px', height: '42px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Submit Rating</button>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                         <button type="button" className="btn-ghost" style={{ flex: 1, height: '42px', fontSize: '14px' }} onClick={onClose}>Skip & Exit</button>
+                         <button type="button" className="btn-ghost" style={{ flex: 1, height: '42px', fontSize: '14px', border: '1.5px solid var(--sky)', color: 'var(--sky)' }} onClick={() => setShowRatingModal(false)}>Back to Call</button>
+                      </div>
                    </div>
                 </form>
              </div>

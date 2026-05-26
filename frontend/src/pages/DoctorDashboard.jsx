@@ -300,7 +300,7 @@ const DoctorDashboard = () => {
                        <div>
                          <h4 style={{ fontSize: '1.1rem', color: 'var(--ink)', fontWeight: '600', margin: 0 }}>{appt.patient?.name || 'Unknown Patient'}</h4>
                          <p style={{ color: 'var(--ink-soft)', fontSize: '13px', marginTop: '4px' }}>
-                           {new Date(appt.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} — Video Consultation
+                           {new Date(appt.appointmentDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} — Video Consultation
                          </p>
                        </div>
                     </div>
@@ -325,12 +325,12 @@ const DoctorDashboard = () => {
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>Write digital e-prescriptions or add notes directly to your patient records.</p>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <li>
-                <button onClick={() => setShowPrescriptionModal(true)} className="glow-button" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--sky)', color: 'var(--sky) !important', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <button onClick={() => setShowPrescriptionModal(true)} className="glow-button" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--sky)', color: 'var(--sky)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <FilePlus size={18} /> Write E-Prescription
                 </button>
               </li>
               <li>
-                <button onClick={() => setShowRecordModal(true)} className="glow-button" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--coral)', color: 'var(--coral) !important', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <button onClick={() => setShowRecordModal(true)} className="glow-button" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--coral)', color: 'var(--coral)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <FilePlus size={18} /> Update Medical Record
                 </button>
               </li>

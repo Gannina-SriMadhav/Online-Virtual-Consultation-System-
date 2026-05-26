@@ -158,7 +158,7 @@ const Register = () => {
                     reader.onloadend = () => setFormData({...formData, certificateData: reader.result});
                     reader.readAsDataURL(file);
                   }
-                }} style={{ border: 'none !important', padding: '0 !important', background: 'transparent !important' }} />
+                }} style={{ border: 'none', padding: '0', background: 'transparent' }} />
               </div>
             </div>
           )}
@@ -179,7 +179,7 @@ const Register = () => {
                     reader.onloadend = () => setFormData({...formData, certificateData: reader.result});
                     reader.readAsDataURL(file);
                   }
-                }} style={{ border: 'none !important', padding: '0 !important', background: 'transparent !important' }} />
+                }} style={{ border: 'none', padding: '0', background: 'transparent' }} />
               </div>
             </div>
           )}
