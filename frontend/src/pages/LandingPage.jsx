@@ -495,7 +495,7 @@ const TRANSLATIONS = {
 */
 
 const LandingPage = () => {
-  const [currentLang, setCurrentLang] = useState('en');
+  const [currentLang, setCurrentLang] = useState(localStorage.getItem('lang') || 'en');
   const t = TRANSLATIONS[currentLang];
 
   const [patientsCount, setPatientsCount] = useState(0);
@@ -614,7 +614,10 @@ const LandingPage = () => {
           <div className="nav-cta" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <select 
               value={currentLang} 
-              onChange={(e) => setCurrentLang(e.target.value)} 
+              onChange={(e) => {
+                setCurrentLang(e.target.value);
+                localStorage.setItem('lang', e.target.value);
+              }} 
               style={{ 
                 padding: '6px 12px', 
                 fontSize: '13px', 
