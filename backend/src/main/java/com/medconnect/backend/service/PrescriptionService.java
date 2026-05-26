@@ -2,6 +2,7 @@ package com.medconnect.backend.service;
 
 import com.medconnect.backend.entity.Appointment;
 import com.medconnect.backend.entity.Prescription;
+import com.medconnect.backend.entity.User;
 import com.medconnect.backend.repository.AppointmentRepository;
 import com.medconnect.backend.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,9 @@ public class PrescriptionService {
     }
     
     public List<Prescription> getPrescriptionsForPatient(String patientId) {
-        List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
+        User patient = new User();
+        patient.setId(patientId);
+        List<Appointment> appointments = appointmentRepository.findByPatient(patient);
         return prescriptionRepository.findByAppointmentIn(appointments);
     }
 

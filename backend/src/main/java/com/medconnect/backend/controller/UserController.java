@@ -51,8 +51,10 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable String id) {
         // Find all appointments associated with this user (either as patient or doctor)
-        List<Appointment> appointmentsAsPatient = appointmentRepository.findByPatientId(id);
-        List<Appointment> appointmentsAsDoctor = appointmentRepository.findByDoctorId(id);
+        User queryUser = new User();
+        queryUser.setId(id);
+        List<Appointment> appointmentsAsPatient = appointmentRepository.findByPatient(queryUser);
+        List<Appointment> appointmentsAsDoctor = appointmentRepository.findByDoctor(queryUser);
 
         List<Appointment> allAppointments = new ArrayList<>();
         if (appointmentsAsPatient != null) allAppointments.addAll(appointmentsAsPatient);
@@ -68,11 +70,11 @@ public class UserController {
         }
 
         // Delete all medical records related to this user
-        List<MedicalRecord> recordsAsPatient = medicalRecordRepository.findByPatientId(id);
+        List<MedicalRecord> recordsAsPatient = medicalRecordRepository.findByPatient(queryUser);
         if (recordsAsPatient != null && !recordsAsPatient.isEmpty()) {
             medicalRecordRepository.deleteAll(recordsAsPatient);
         }
-        List<MedicalRecord> recordsAsDoctor = medicalRecordRepository.findByDoctorId(id);
+        List<MedicalRecord> recordsAsDoctor = medicalRecordRepository.findByDoctor(queryUser);
         if (recordsAsDoctor != null && !recordsAsDoctor.isEmpty()) {
             medicalRecordRepository.deleteAll(recordsAsDoctor);
         }

@@ -1,6 +1,7 @@
 package com.medconnect.backend.service;
 
 import com.medconnect.backend.entity.MedicalRecord;
+import com.medconnect.backend.entity.User;
 import com.medconnect.backend.repository.MedicalRecordRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -18,6 +19,8 @@ public class MedicalRecordService {
     }
 
     public List<MedicalRecord> getRecordsForPatient(String patientId) {
-        return medicalRecordRepository.findByPatientId(patientId);
+        User patient = new User();
+        patient.setId(patientId);
+        return medicalRecordRepository.findByPatient(patient);
     }
 }

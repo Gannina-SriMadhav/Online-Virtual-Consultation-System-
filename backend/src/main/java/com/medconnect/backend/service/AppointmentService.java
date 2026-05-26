@@ -1,6 +1,7 @@
 package com.medconnect.backend.service;
 
 import com.medconnect.backend.entity.Appointment;
+import com.medconnect.backend.entity.User;
 import com.medconnect.backend.repository.AppointmentRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -14,11 +15,15 @@ public class AppointmentService {
     }
 
     public List<Appointment> getAppointmentsForPatient(String patientId) {
-        return appointmentRepository.findByPatientId(patientId);
+        User patient = new User();
+        patient.setId(patientId);
+        return appointmentRepository.findByPatient(patient);
     }
     
     public List<Appointment> getAppointmentsForDoctor(String doctorId) {
-        return appointmentRepository.findByDoctorId(doctorId);
+        User doctor = new User();
+        doctor.setId(doctorId);
+        return appointmentRepository.findByDoctor(doctor);
     }
     
     public Appointment createAppointment(Appointment appointment) {
