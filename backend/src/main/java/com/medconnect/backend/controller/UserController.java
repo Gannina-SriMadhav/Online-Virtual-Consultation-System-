@@ -88,7 +88,7 @@ public class UserController {
         User user = userRepository.findById(id).orElseThrow();
         
         // Email uniqueness check
-        if (!user.getEmail().equalsIgnoreCase(updatedUser.getEmail())) {
+        if (updatedUser.getEmail() != null && !user.getEmail().equalsIgnoreCase(updatedUser.getEmail())) {
             java.util.Optional<User> existingEmail = userRepository.findByEmail(updatedUser.getEmail());
             if (existingEmail.isPresent() && !existingEmail.get().getId().equals(id)) {
                 return org.springframework.http.ResponseEntity.status(409).body("This email address is already registered by another account.");
@@ -105,10 +105,18 @@ public class UserController {
             }
         }
         
-        user.setName(updatedUser.getName());
-        user.setEmail(updatedUser.getEmail());
-        user.setAge(updatedUser.getAge());
-        user.setPhoneNumber(updatedUser.getPhoneNumber());
+        if (updatedUser.getName() != null) {
+            user.setName(updatedUser.getName());
+        }
+        if (updatedUser.getEmail() != null) {
+            user.setEmail(updatedUser.getEmail());
+        }
+        if (updatedUser.getAge() != null) {
+            user.setAge(updatedUser.getAge());
+        }
+        if (updatedUser.getPhoneNumber() != null) {
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+        }
         
         if (updatedUser.getSpecialist() != null) {
             user.setSpecialist(updatedUser.getSpecialist());

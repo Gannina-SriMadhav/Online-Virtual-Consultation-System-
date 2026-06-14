@@ -71,6 +71,10 @@ const Login = () => {
   const [tempOtp, setTempOtp] = useState('');
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    localStorage.removeItem('userEmail');
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
