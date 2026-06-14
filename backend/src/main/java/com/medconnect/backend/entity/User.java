@@ -76,4 +76,26 @@ public class User {
     public void setRating(Double rating) { this.rating = rating; }
     public Integer getRatingCount() { return ratingCount; }
     public void setRatingCount(Integer ratingCount) { this.ratingCount = ratingCount; }
+
+    // New Telehealth and Security Fields
+    private String availabilityConfig;
+    private String ehrData;
+    private String twoFactorSecret;
+    private Boolean twoFactorEnabled = false;
+    private String activeSessions;
+
+    public String getAvailabilityConfig() { return availabilityConfig; }
+    public void setAvailabilityConfig(String availabilityConfig) { this.availabilityConfig = availabilityConfig; }
+    
+    public String getEhrData() { return ehrData; }
+    public void setEhrData(String ehrData) { this.ehrData = ehrData; }
+    
+    public String getTwoFactorSecret() { return twoFactorSecret; }
+    public void setTwoFactorSecret(String twoFactorSecret) { this.twoFactorSecret = twoFactorSecret; }
+    
+    public Boolean getTwoFactorEnabled() { return twoFactorEnabled; }
+    public void setTwoFactorEnabled(Boolean twoFactorEnabled) { this.twoFactorEnabled = twoFactorEnabled; }
+    
+    public String getActiveSessions() { return activeSessions; }
+    public void setActiveSessions(String activeSessions) { this.activeSessions = activeSessions; }
 }

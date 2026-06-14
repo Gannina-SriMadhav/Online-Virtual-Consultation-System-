@@ -33,4 +33,30 @@ public class Appointment {
     public void setAppointmentDate(Instant appointmentDate) { this.appointmentDate = appointmentDate; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    // New Telehealth, Payment, Lab, and AI Summary Fields
+    private Double paymentAmount;
+    private String paymentTransactionId;
+    private String paymentStatus;
+    private String patientSymptoms;
+    private String labTests;
+    private String consultationSummary;
+
+    public Double getPaymentAmount() { return paymentAmount; }
+    public void setPaymentAmount(Double paymentAmount) { this.paymentAmount = paymentAmount; }
+    
+    public String getPaymentTransactionId() { return paymentTransactionId; }
+    public void setPaymentTransactionId(String paymentTransactionId) { this.paymentTransactionId = paymentTransactionId; }
+    
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    
+    public String getPatientSymptoms() { return patientSymptoms; }
+    public void setPatientSymptoms(String patientSymptoms) { this.patientSymptoms = patientSymptoms; }
+    
+    public String getLabTests() { return labTests; }
+    public void setLabTests(String labTests) { this.labTests = labTests; }
+    
+    public String getConsultationSummary() { return consultationSummary; }
+    public void setConsultationSummary(String consultationSummary) { this.consultationSummary = consultationSummary; }
 }

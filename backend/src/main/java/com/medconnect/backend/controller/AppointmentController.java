@@ -40,4 +40,9 @@ public class AppointmentController {
     public Appointment completeAppointment(@PathVariable String id) {
         return appointmentService.completeAppointment(id);
     }
+
+    @PutMapping("/{id}")
+    public Appointment updateAppointment(@PathVariable String id, @RequestBody Appointment appointment) {
+        return appointmentService.updateAppointment(id, appointment);
+    }
 }

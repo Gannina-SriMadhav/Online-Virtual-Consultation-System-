@@ -40,4 +40,17 @@ public class AppointmentService {
             return appointmentRepository.save(appointment);
         }).orElseThrow(() -> new RuntimeException("Appointment not found"));
     }
+
+    public Appointment updateAppointment(String appointmentId, Appointment updated) {
+        return appointmentRepository.findById(appointmentId).map(appointment -> {
+            if (updated.getStatus() != null) appointment.setStatus(updated.getStatus());
+            if (updated.getPaymentAmount() != null) appointment.setPaymentAmount(updated.getPaymentAmount());
+            if (updated.getPaymentTransactionId() != null) appointment.setPaymentTransactionId(updated.getPaymentTransactionId());
+            if (updated.getPaymentStatus() != null) appointment.setPaymentStatus(updated.getPaymentStatus());
+            if (updated.getPatientSymptoms() != null) appointment.setPatientSymptoms(updated.getPatientSymptoms());
+            if (updated.getLabTests() != null) appointment.setLabTests(updated.getLabTests());
+            if (updated.getConsultationSummary() != null) appointment.setConsultationSummary(updated.getConsultationSummary());
+            return appointmentRepository.save(appointment);
+        }).orElseThrow(() -> new RuntimeException("Appointment not found"));
+    }
 }

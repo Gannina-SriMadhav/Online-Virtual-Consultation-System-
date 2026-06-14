@@ -55,6 +55,10 @@ public class AuthController {
                 return org.springframework.http.ResponseEntity.status(403).body("Account pending administrative approval.");
             }
 
+            if (user.getTwoFactorEnabled() != null && user.getTwoFactorEnabled()) {
+                return org.springframework.http.ResponseEntity.status(202).body("2FA_REQUIRED");
+            }
+
             return org.springframework.http.ResponseEntity.ok("mock-jwt-token-for-" + user.getEmail() + "-role-" + user.getRole());
         } catch(Exception e) {
             return org.springframework.http.ResponseEntity.status(401).body("Invalid credentials");

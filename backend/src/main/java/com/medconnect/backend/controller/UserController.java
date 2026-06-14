@@ -116,6 +116,21 @@ public class UserController {
         if (updatedUser.getLicenseNumber() != null) {
             user.setLicenseNumber(updatedUser.getLicenseNumber());
         }
+        if (updatedUser.getAvailabilityConfig() != null) {
+            user.setAvailabilityConfig(updatedUser.getAvailabilityConfig());
+        }
+        if (updatedUser.getEhrData() != null) {
+            user.setEhrData(updatedUser.getEhrData());
+        }
+        if (updatedUser.getTwoFactorSecret() != null) {
+            user.setTwoFactorSecret(updatedUser.getTwoFactorSecret());
+        }
+        if (updatedUser.getTwoFactorEnabled() != null) {
+            user.setTwoFactorEnabled(updatedUser.getTwoFactorEnabled());
+        }
+        if (updatedUser.getActiveSessions() != null) {
+            user.setActiveSessions(updatedUser.getActiveSessions());
+        }
         
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().trim().isEmpty() && !updatedUser.getPassword().startsWith("$2a$")) {
             user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));

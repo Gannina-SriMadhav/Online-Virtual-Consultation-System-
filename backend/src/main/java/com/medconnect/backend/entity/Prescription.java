@@ -41,4 +41,8 @@ public class Prescription {
     public void setIsFulfilled(Boolean isFulfilled) { this.isFulfilled = isFulfilled; }
     public String getVerificationCode() { return verificationCode; }
     public void setVerificationCode(String verificationCode) { this.verificationCode = verificationCode; }
+
+    private String drugWarnings;
+    public String getDrugWarnings() { return drugWarnings; }
+    public void setDrugWarnings(String drugWarnings) { this.drugWarnings = drugWarnings; }
 }

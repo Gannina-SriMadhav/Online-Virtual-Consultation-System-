@@ -137,3 +137,30 @@ export const verifyPrescriptionCode = async (code) => {
     return res.json();
 };
 
+export const updateAppointment = async (id, appt) => {
+    const res = await fetch(`${API_BASE}/appointments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appt)
+    });
+    return res.json();
+};
+
+export const getAuditLogs = async () => {
+    try {
+        const res = await fetch(`${API_BASE}/audit-logs`);
+        if (!res.ok) return [];
+        return await res.json();
+    } catch(e) { return []; }
+};
+
+export const createAuditLog = async (userId, userName, userRole, action, details) => {
+    try {
+        await fetch(`${API_BASE}/audit-logs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, userName, userRole, action, details })
+        });
+    } catch(e) {}
+};
+
