@@ -14,11 +14,12 @@ const SymptomChecker = ({ onClose, onSelectSpecialty, currentLang = 'en' }) => {
   const [duration, setDuration] = useState('1');
   const [severity, setSeverity] = useState('Mild');
   const [result, setResult] = useState(null);
+  const [emergencyAlert, setEmergencyAlert] = useState(false);
 
   const TRANSLATIONS = {
     en: {
       title: "AI Symptom Checker & Specialist Finder",
-      desc: "Describe your symptoms in detail to find the right clinical specialist.",
+      desc: "Describe your symptoms to receive potential specialty suggestions. This tool does not provide a medical diagnosis.",
       labelSymptom: "Describe symptoms (e.g. fever, headache, dry cough):",
       labelDuration: "Duration of Symptoms (Days):",
       labelSeverity: "Severity Level:",
@@ -27,13 +28,13 @@ const SymptomChecker = ({ onClose, onSelectSpecialty, currentLang = 'en' }) => {
       moderate: "Moderate",
       severe: "Severe",
       recTitle: "Clinical Assessment Result",
-      recText: "Based on symptom analysis, we recommend consulting with a:",
+      recText: "Based on symptom analysis, we suggest consulting with a:",
       btnBook: "Book Recommended Specialty",
       btnCancel: "Close"
     },
     hi: {
       title: "एआई लक्षण जांचकर्ता और विशेषज्ञ खोजक",
-      desc: "सही नैदानिक विशेषज्ञ खोजने के लिए अपने लक्षणों का विस्तार से वर्णन करें।",
+      desc: "संभावित विशेषताओं के सुझाव प्राप्त करने के लिए अपने लक्षणों का वर्णन करें। यह उपकरण चिकित्सा निदान प्रदान नहीं करता है।",
       labelSymptom: "लक्षणों का वर्णन करें (जैसे बुखार, सिरदर्द, सूखी खांसी):",
       labelDuration: "लक्षणों की अवधि (दिन):",
       labelSeverity: "तीव्रता स्तर:",
@@ -42,13 +43,13 @@ const SymptomChecker = ({ onClose, onSelectSpecialty, currentLang = 'en' }) => {
       moderate: "मध्यम",
       severe: "गंभीर",
       recTitle: "नैदानिक मूल्यांकन परिणाम",
-      recText: "लक्षण विश्लेषण के आधार पर, हम आपको इस विशेषज्ञ से परामर्श करने की सलाह देते हैं:",
+      recText: "लक्षण विश्लेषण के आधार पर, हम आपको इस विशेषज्ञ से परामर्श करने का सुझाव देते हैं:",
       btnBook: "अनुशंसित विशेषता बुक करें",
       btnCancel: "बंद करें"
     },
     te: {
       title: "AI లక్షణాల తనిఖీ & నిపుణుల గుర్తింపు",
-      desc: "సరైన నిపుణుడిని కనుగొనడానికి మీ లక్షణాలను వివరంగా వివరించండి.",
+      desc: "సంభావ్య స్పెషాలిటీ సూచనలను పొందడానికి మీ లక్షణాలను వివరించండి. ఈ సాధనం వైద్య నిర్ధారణను అందించదు.",
       labelSymptom: "లక్షణాలను వివరించండి (ఉదా. జ్వరం, తలనొప్పి, పొడి దగ్గు):",
       labelDuration: "లక్షణాల వ్యవధి (రోజులు):",
       labelSeverity: "తీవ్రత స్థాయి:",
@@ -70,6 +71,13 @@ const SymptomChecker = ({ onClose, onSelectSpecialty, currentLang = 'en' }) => {
     if (!symptomsText.trim()) return;
 
     const lowerText = symptomsText.toLowerCase();
+    const isEmergency = lowerText.includes('chest pain') || lowerText.includes('breathing difficulty') || lowerText.includes('stroke') || lowerText.includes('difficulty breathing') || lowerText.includes('heart attack') || lowerText.includes('severe chest pain') || lowerText.includes('paralysis');
+
+    if (isEmergency) {
+      setEmergencyAlert(true);
+      return;
+    }
+
     let matched = SYMPTOM_SPECIALTIES.find(item => 
       item.keywords.some(keyword => lowerText.includes(keyword))
     );
@@ -88,7 +96,24 @@ const SymptomChecker = ({ onClose, onSelectSpecialty, currentLang = 'en' }) => {
         <h2 className="serif-text" style={{ fontSize: '1.8rem', marginBottom: '0.5rem', color: 'var(--ink)' }}>{t.title}</h2>
         <p style={{ color: 'var(--ink-soft)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t.desc}</p>
 
-        {!result ? (
+        {emergencyAlert ? (
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+            <div style={{ background: '#fef2f2', border: '2px solid #ef4444', padding: '20px', borderRadius: '12px' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🚨</div>
+              <h3 style={{ margin: '0 0 8px 0', color: '#991b1b', fontSize: '16px', fontWeight: '800' }}>EMERGENCY WARNING</h3>
+              <p style={{ margin: '0', fontSize: '13px', color: '#7f1d1d', lineHeight: '1.5', fontWeight: '500' }}>
+                Seek emergency medical care immediately. If you are experiencing chest pain, severe breathing difficulty, stroke symptoms, or a medical emergency, please call your local emergency services (e.g., 911 or 112) now. Do not wait for a virtual consultation.
+              </p>
+            </div>
+            <button 
+              onClick={() => { setEmergencyAlert(false); setResult(null); }} 
+              className="btn-ghost" 
+              style={{ width: '100%', borderColor: '#ef4444', color: '#ef4444' }}
+            >
+              ← Back
+            </button>
+          </div>
+        ) : !result ? (
           <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.labelSymptom}</label>

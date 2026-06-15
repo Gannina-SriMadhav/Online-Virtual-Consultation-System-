@@ -62,7 +62,10 @@ const TRANSLATIONS = {
     confirmPasswordInput: "Confirm Password",
     editDetailsBtn: "Edit details",
     closeBtn: "Close",
-    cancelBtn: "Cancel"
+    cancelBtn: "Cancel",
+    enable2fa: "🔒 Enable Two-Factor Authentication (2FA)",
+    scan2faQr: "Scan QR with Authenticator App (Google/Microsoft):",
+    secretKey: "Secret Key:"
   },
   hi: {
     welcome: "स्वागत है",
@@ -122,7 +125,10 @@ const TRANSLATIONS = {
     confirmPasswordInput: "पासवर्ड की पुष्टि करें",
     editDetailsBtn: "विवरण संपादित करें",
     closeBtn: "बंद करें",
-    cancelBtn: "रद्द करें"
+    cancelBtn: "रद्द करें",
+    enable2fa: "🔒 द्वि-कारक प्रमाणीकरण (2FA) सक्षम करें",
+    scan2faQr: "प्रमाणीकरण ऐप (Google/Microsoft) से क्यूआर स्कैन करें:",
+    secretKey: "गुप्त कुंजी (Secret Key):"
   },
   te: {
     welcome: "స్వాగతం",
@@ -182,7 +188,10 @@ const TRANSLATIONS = {
     confirmPasswordInput: "పాస్‌వర్డ్ నిర్ధారించండి",
     editDetailsBtn: "వివరాలను సవరించండి",
     closeBtn: "మూసివేయి",
-    cancelBtn: "రద్దు చేయి"
+    cancelBtn: "రద్దు చేయి",
+    enable2fa: "🔒 ద్వి-కారక ప్రామాణీకరణ (2FA) ప్రారంభించు",
+    scan2faQr: "అథెంటికేటర్ యాప్ (Google/Microsoft) తో క్యూఆర్ కోడ్ స్కాన్ చేయండి:",
+    secretKey: "రహస్య కీ (Secret Key):"
   }
 };
 
@@ -218,9 +227,23 @@ const PharmacistDashboard = () => {
     phoneNumber: '',
     password: '',
     confirmPassword: '',
+    twoFactorEnabled: false,
     specialist: '',
     licenseNumber: ''
   });
+  const [showScannerModal, setShowScannerModal] = useState(false);
+
+  useEffect(() => {
+    if (showScannerModal) {
+      const timer = setTimeout(() => {
+        const sampleCode = pendingRx[0]?.verificationCode || 'ML-A39B';
+        setVerificationCodeInput(sampleCode);
+        setShowScannerModal(false);
+        toast.success(`QR Code successfully scanned: ${sampleCode}`);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [showScannerModal, pendingRx]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -278,6 +301,7 @@ const PharmacistDashboard = () => {
           phoneNumber: me.phoneNumber || '',
           password: '',
           confirmPassword: '',
+          twoFactorEnabled: me.twoFactorEnabled || false,
           specialist: me.specialist || '',
           licenseNumber: me.licenseNumber || ''
         });
@@ -287,6 +311,7 @@ const PharmacistDashboard = () => {
         setShowSettingsModal(true);
       }
     } catch (err) {
+      console.error(err);
       toast.error(t.loadDetailsFailed);
     }
   };
@@ -307,6 +332,7 @@ const PharmacistDashboard = () => {
         age: settingsData.age ? parseInt(settingsData.age) : null,
         phoneNumber: settingsData.phoneNumber,
         password: settingsData.password || null,
+        twoFactorEnabled: settingsData.twoFactorEnabled,
         specialist: settingsData.specialist || null,
         licenseNumber: settingsData.licenseNumber || null
       };
@@ -317,6 +343,7 @@ const PharmacistDashboard = () => {
       setShowSettingsModal(false);
       setIsEditingSettings(false);
     } catch (err) {
+      console.error(err);
       toast.error(t.profileUpdateFailed);
     }
   };
@@ -353,6 +380,7 @@ const PharmacistDashboard = () => {
         }
       }
     } catch (err) {
+      console.error(err);
       toast.error(t.invalidCodeError);
       setVerifiedScript(null);
     } finally {
@@ -374,6 +402,7 @@ const PharmacistDashboard = () => {
           setVerificationCodeInput('');
           loadData();
         } catch (err) {
+          console.error(err);
           toast.error(t.dispenseFailed);
         }
       }
@@ -470,14 +499,33 @@ const PharmacistDashboard = () => {
                 {t.legitVerificationDesc}
               </p>
               
-              <form onSubmit={handleVerifyCode} style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
+              <form onSubmit={handleVerifyCode} style={{ display: 'flex', gap: '10px', marginBottom: '2rem', flexWrap: 'wrap' }}>
                 <input 
                   type="text" 
                   placeholder={t.enterLegitCodePlaceholder}
                   value={verificationCodeInput}
                   onChange={e => setVerificationCodeInput(e.target.value)}
-                  style={{ flex: 1, padding: '12px 16px', fontSize: '15px', fontFamily: 'monospace', letterSpacing: '0.5px' }}
+                  style={{ flex: 1, minWidth: '200px', padding: '12px 16px', fontSize: '15px', fontFamily: 'monospace', letterSpacing: '0.5px' }}
                 />
+                <button 
+                  type="button" 
+                  onClick={() => setShowScannerModal(true)} 
+                  style={{ 
+                    padding: '12px 20px', 
+                    fontSize: '14px', 
+                    background: 'var(--surface)', 
+                    color: 'var(--ink-soft)', 
+                    border: '1.5px solid var(--border)', 
+                    borderRadius: '8px', 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px',
+                    fontWeight: '600' 
+                  }}
+                >
+                  📷 Scan QR Code
+                </button>
                 <button type="submit" className="glow-button" disabled={isVerifyingCode} style={{ padding: '12px 24px', fontSize: '14px', background: 'var(--sky)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {isVerifyingCode ? t.verifying : t.verifyLegitCodeBtn}
                 </button>
@@ -737,6 +785,27 @@ const PharmacistDashboard = () => {
                 </div>
               </div>
 
+              {/* Two-Factor Authentication (2FA) Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                <input 
+                  type="checkbox" 
+                  disabled={!isEditingSettings}
+                  checked={settingsData.twoFactorEnabled || false}
+                  onChange={e => setSettingsData({...settingsData, twoFactorEnabled: e.target.checked})}
+                  id="toggle-pharmacist-2fa"
+                />
+                <label htmlFor="toggle-pharmacist-2fa" style={{ fontWeight: '600', color: 'var(--ink)', cursor: 'pointer', fontSize: '13px' }}>
+                  {t.enable2fa}
+                </label>
+              </div>
+              {settingsData.twoFactorEnabled && (
+                <div style={{ marginTop: '15px', padding: '12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--ink-soft)', fontWeight: '600', textAlign: 'center' }}>{t.scan2faQr}</span>
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=otpauth://totp/MedConnect:${settingsData.email}?secret=MC2FAPHARMACISTSECRET&issuer=MedConnect`} alt="2FA QR Code" width="140" height="140" />
+                  <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--ink-muted)' }}>{t.secretKey} MC-2FA-PHARMACIST-KEY</span>
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                 {!isEditingSettings ? (
                   <>
@@ -751,6 +820,66 @@ const PharmacistDashboard = () => {
                 )}
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Simulated Live QR Scanner Modal Overlay */}
+      {showScannerModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(11,18,32,0.4)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 999 }}>
+          <div className="glass-card" style={{ padding: '2.5rem', width: '90%', maxWidth: '400px', textAlign: 'center', background: 'var(--white)', border: '1.5px solid var(--border)', position: 'relative' }}>
+            <h3 className="serif-text" style={{ fontSize: '1.6rem', marginBottom: '1rem', color: 'var(--ink)' }}>📷 Live QR Scanner</h3>
+            <p style={{ color: 'var(--ink-soft)', fontSize: '13px', marginBottom: '1.5rem' }}>Align the prescription QR code within the scanning zone.</p>
+            
+            {/* Scanner Viewfinder Box */}
+            <div style={{ 
+              width: '240px', 
+              height: '240px', 
+              margin: '0 auto 2rem', 
+              border: '3px solid var(--sky)', 
+              borderRadius: '16px', 
+              position: 'relative', 
+              overflow: 'hidden',
+              background: '#0b1220'
+            }}>
+              {/* Scan laser line animation using index.css keyframe */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '4px',
+                background: 'linear-gradient(to right, transparent, #38bdf8, transparent)',
+                boxShadow: '0 0 12px #38bdf8',
+                animation: 'qr-scan-anim 2.5s linear infinite'
+              }}></div>
+              
+              {/* Mock camera feed preview graphic */}
+              <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'rgba(255,255,255,0.15)',
+                fontSize: '48px',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                📸
+                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px', textTransform: 'uppercase' }}>Camera Active</span>
+              </div>
+            </div>
+            
+            {/* Cancel Button */}
+            <button 
+              type="button" 
+              onClick={() => setShowScannerModal(false)} 
+              className="btn-ghost" 
+              style={{ width: '100%' }}
+            >
+              Cancel Scan
+            </button>
           </div>
         </div>
       )}

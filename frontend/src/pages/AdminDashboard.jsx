@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getAllUsers, approveUser, deleteUser, updateUserProfile } from '../api';
+import { getAllUsers, approveUser, deleteUser, updateUserProfile, getAuditLogs } from '../api';
 import toast from 'react-hot-toast';
+import { LineChart, BarChart, DonutChart } from '../components/AnalyticsCharts';
 
 const TRANSLATIONS = {
   en: {
@@ -59,7 +60,34 @@ const TRANSLATIONS = {
     cancelBtn: "Cancel",
     saveChangesBtn: "Save Changes",
     enterNewPassword: "Enter new password",
-    confirmNewPassword: "Confirm new password"
+    confirmNewPassword: "Confirm new password",
+    enable2fa: "🔒 Enable Two-Factor Authentication (2FA)",
+    scan2faQr: "Scan QR with Authenticator App (Google/Microsoft):",
+    secretKey: "Secret Key:",
+    tabOverview: "📊 Overview & Charts",
+    tabApprovals: "⏳ Pending Approvals",
+    tabUsers: "👥 Platform Users",
+    tabAuditLogs: "📜 Audit Logs",
+    tabSessions: "🛡️ Active Sessions",
+    analyticsTitle: "📈 Clinical Performance & Revenue Analytics",
+    revenueTrend: "Revenue Trend ($)",
+    appointmentVol: "Daily Appointment Volume",
+    topSpecialties: "Top Medical Specialties",
+    doctorUtilization: "Doctor Utilization (%)",
+    prescriptionsIssued: "Prescriptions Issued",
+    auditTitle: "📜 Clinical & Admin Audit Logs",
+    thTimestamp: "Timestamp",
+    thUser: "User",
+    thRole: "Role",
+    thAction: "Action",
+    thDetails: "Details",
+    noAuditLogs: "No audit logs recorded.",
+    sessionsTitle: "🛡️ Active Login Sessions",
+    thDevice: "Device User Agent",
+    thIp: "IP Address",
+    thLastActive: "Last Active",
+    noSessions: "No active user sessions tracked.",
+    btnForceLogout: "Force Logout"
   },
   hi: {
     welcome: "स्वागत है",
@@ -117,7 +145,34 @@ const TRANSLATIONS = {
     cancelBtn: "रद्द करें",
     saveChangesBtn: "परिवर्तन सहेजें",
     enterNewPassword: "नया पासवर्ड दर्ज करें",
-    confirmNewPassword: "नए पासवर्ड की पुष्टि करें"
+    confirmNewPassword: "नए पासवर्ड की पुष्टि करें",
+    enable2fa: "🔒 द्वि-कारक प्रमाणीकरण (2FA) सक्षम करें",
+    scan2faQr: "प्रमाणीकरण ऐप (Google/Microsoft) से क्यूआर स्कैन करें:",
+    secretKey: "गुप्त कुंजी (Secret Key):",
+    tabOverview: "📊 अवलोकन और चार्ट",
+    tabApprovals: "⏳ लंबित अनुमोदन",
+    tabUsers: "👥 प्लेटफ़ॉर्म उपयोगकर्ता",
+    tabAuditLogs: "📜 ऑडिट लॉग",
+    tabSessions: "🛡️ सक्रिय सत्र",
+    analyticsTitle: "📈 नैदानिक प्रदर्शन और राजस्व विश्लेषिकी",
+    revenueTrend: "राजस्व रुझान ($)",
+    appointmentVol: "दैनिक अपॉइंटमेंट मात्रा",
+    topSpecialties: "शीर्ष चिकित्सा विशेषता",
+    doctorUtilization: "डॉक्टर उपयोग (%)",
+    prescriptionsIssued: "जारी किए गए नुस्खे",
+    auditTitle: "📜 नैदानिक और व्यवस्थापक ऑडिट लॉग",
+    thTimestamp: "समय-चिह्न",
+    thUser: "उपयोगकर्ता",
+    thRole: "भूमिका",
+    thAction: "कार्रवाई",
+    thDetails: "विवरण",
+    noAuditLogs: "कोई ऑडिट लॉग दर्ज नहीं किया गया।",
+    sessionsTitle: "🛡️ सक्रिय लॉगिन सत्र",
+    thDevice: "डिवाइस यूजर एजेंट",
+    thIp: "आईपी पता",
+    thLastActive: "अंतिम सक्रिय",
+    noSessions: "कोई सक्रिय उपयोगकर्ता सत्र ट्रैक नहीं किया गया।",
+    btnForceLogout: "ज़बरदस्ती लॉगआउट"
   },
   te: {
     welcome: "స్వాగతం",
@@ -175,7 +230,34 @@ const TRANSLATIONS = {
     cancelBtn: "రద్దు చేయి",
     saveChangesBtn: "మార్పులను సేవ్ చేయి",
     enterNewPassword: "కొత్త పాస్‌వర్డ్‌ను నమోదు చేయండి",
-    confirmNewPassword: "కొత్త పాస్‌వర్డ్‌ను నిర్ధారించండి"
+    confirmNewPassword: "కొత్త పాస్‌వర్డ్‌ను నిర్ధారించండి",
+    enable2fa: "🔒 ద్వి-కారక ప్రామాణీకరణ (2FA) ప్రారంభించు",
+    scan2faQr: "అథెంటికేటర్ యాప్ (Google/Microsoft) తో క్యూఆర్ కోడ్ స్కాన్ చేయండి:",
+    secretKey: "రహస్య కీ (Secret Key):",
+    tabOverview: "📊 అవలోకనం & చార్టులు",
+    tabApprovals: "⏳ పెండింగ్ అనుమతులు",
+    tabUsers: "👥 ప్లాట్‌ఫారమ్ వినియోగదారులు",
+    tabAuditLogs: "📜 ఆడిట్ లాగ్‌లు",
+    tabSessions: "🛡️ యాక్టివ్ సెషన్లు",
+    analyticsTitle: "📈 క్లినికల్ పనితీరు & రాబడి విశ్లేషణ",
+    revenueTrend: "రాబడి ధోరణి ($)",
+    appointmentVol: "రోజువారీ అపాయింట్‌మెంట్ పరిమాణం",
+    topSpecialties: "అగ్ర వైద్య విభాగాలు",
+    doctorUtilization: "వైద్యుల వినియోగం (%)",
+    prescriptionsIssued: "జారీ చేయబడిన ప్రిస్క్రిప్షన్లు",
+    auditTitle: "📜 క్లినికల్ & అడ్మిన్ ఆడిట్ లాగ్‌లు",
+    thTimestamp: "సమయము",
+    thUser: "వినియోగదారుడు",
+    thRole: "పాత్ర",
+    thAction: "చర్య",
+    thDetails: "వివరాలు",
+    noAuditLogs: "ఎటువంటి ఆడిట్ లాగ్‌లు నమోదు కాలేదు.",
+    sessionsTitle: "🛡️ యాక్టివ్ లాగిన్ సెషన్లు",
+    thDevice: "పరికరం మరియు బ్రౌజర్",
+    thIp: "ఐపీ చిరునామా",
+    thLastActive: "చివరి సక్రియం",
+    noSessions: "ఎటువంటి యాక్టివ్ వినియోగదారు సెషన్లు లేవు.",
+    btnForceLogout: "ఫోర్స్ లాగౌట్"
   }
 };
 
@@ -191,6 +273,8 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [adminId, setAdminId] = useState(null);
   const [adminName, setAdminName] = useState('System Administrator');
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Settings Panel State
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -202,6 +286,7 @@ const AdminDashboard = () => {
     phoneNumber: '',
     password: '',
     confirmPassword: '',
+    twoFactorEnabled: false,
     specialist: '',
     licenseNumber: ''
   });
@@ -222,16 +307,6 @@ const AdminDashboard = () => {
     showSettingsModalRef.current = showSettingsModal;
   }, [showSettingsModal]);
 
-  useEffect(() => {
-    loadUsers();
-    const interval = setInterval(() => {
-      if (!showSettingsModalRef.current) {
-        loadUsers();
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   const loadUsers = async () => {
     const data = await getAllUsers();
     setUsers(data || []);
@@ -242,7 +317,22 @@ const AdminDashboard = () => {
       setAdminId(me.id);
       setAdminName(me.name);
     }
+
+    const logs = await getAuditLogs();
+    setAuditLogs(logs || []);
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      loadUsers();
+    }, 0);
+    const interval = setInterval(() => {
+      if (!showSettingsModalRef.current) {
+        loadUsers();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleOpenSettings = async () => {
     try {
@@ -257,6 +347,7 @@ const AdminDashboard = () => {
           phoneNumber: me.phoneNumber || '',
           password: '',
           confirmPassword: '',
+          twoFactorEnabled: me.twoFactorEnabled || false,
           specialist: me.specialist || '',
           licenseNumber: me.licenseNumber || ''
         });
@@ -266,6 +357,7 @@ const AdminDashboard = () => {
         setShowSettingsModal(true);
       }
     } catch (err) {
+      console.error("Open settings error:", err);
       toast.error(t.loadDetailsFailed);
     }
   };
@@ -286,6 +378,7 @@ const AdminDashboard = () => {
         age: settingsData.age ? parseInt(settingsData.age) : null,
         phoneNumber: settingsData.phoneNumber,
         password: settingsData.password || null,
+        twoFactorEnabled: settingsData.twoFactorEnabled,
         specialist: settingsData.specialist || null,
         licenseNumber: settingsData.licenseNumber || null
       };
@@ -296,6 +389,7 @@ const AdminDashboard = () => {
       setShowSettingsModal(false);
       setIsEditingSettings(false);
     } catch (err) {
+      console.error("Save settings error:", err);
       toast.error(t.profileUpdateFailed);
     }
   };
@@ -323,7 +417,10 @@ const AdminDashboard = () => {
           await approveUser(id);
           toast.success(t.approveSuccess);
           loadUsers();
-        } catch(err) { toast.error(t.approveFailed); }
+        } catch (err) {
+          console.error("Approve user error:", err);
+          toast.error(t.approveFailed);
+        }
       }
     );
   };
@@ -338,9 +435,40 @@ const AdminDashboard = () => {
           await deleteUser(id);
           toast.success(t.deleteSuccess);
           loadUsers();
-        } catch(err) { toast.error(t.deleteFailed); }
+        } catch (err) {
+          console.error("Delete user error:", err);
+          toast.error(t.deleteFailed);
+        }
       }
     );
+  };
+
+  const handleForceLogout = async (userId, sessionIndex) => {
+    try {
+      const userToEdit = users.find(u => u.id === userId);
+      if (userToEdit && userToEdit.activeSessions) {
+        const sessions = JSON.parse(userToEdit.activeSessions);
+        sessions.splice(sessionIndex, 1);
+        
+        const payload = {
+          activeSessions: JSON.stringify(sessions)
+        };
+        await updateUserProfile(userId, payload);
+        toast.success("Active session terminated successfully!");
+        
+        // If the admin terminated their own session, logout
+        const myEmail = localStorage.getItem('userEmail');
+        if (userToEdit.email === myEmail && sessions.length === 0) {
+          localStorage.removeItem('userEmail');
+          window.location.assign('/');
+        } else {
+          loadUsers();
+        }
+      }
+    } catch (err) {
+      console.error("Failed to terminate session", err);
+      toast.error("Error terminating user session.");
+    }
   };
 
   const handleLogout = () => {
@@ -350,7 +478,7 @@ const AdminDashboard = () => {
       t.logout,
       () => {
         localStorage.removeItem('userEmail');
-        window.location.href = '/';
+        window.location.assign('/');
       }
     );
   };
@@ -369,57 +497,8 @@ const AdminDashboard = () => {
   const verifiedProviders = users.filter(u => u.isApproved && (u.role === 'DOCTOR' || u.role === 'PHARMACIST'));
   const patients = users.filter(u => u.role === 'PATIENT');
 
-  const ProviderTable = ({ title, dataset, isPending = false }) => (
-    <div className="glass-card" style={{ padding: '2rem', marginBottom: '2rem', background: 'var(--white)' }}>
-      <h3 className="serif-text" style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: isPending ? 'var(--coral)' : 'var(--mint)' }}>{title} ({dataset.length})</h3>
-      <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflowX: 'auto', background: 'var(--white)' }}>
-        {dataset.length === 0 ? (
-           <p style={{ color: 'var(--ink-muted)', padding: '2rem', textAlign: 'center' }}>{t.noProviders}</p>
-        ) : (
-           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', minWidth: '800px' }}>
-             <thead>
-               <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-                 <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.providerNameRole}</th>
-                 <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.credentials}</th>
-                 <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.status}</th>
-                 <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px', textAlign: 'right' }}>{t.actions}</th>
-               </tr>
-             </thead>
-             <tbody>
-               {dataset.map(u => (
-                 <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '18px 20px' }}>
-                       <div style={{ color: 'var(--ink)', fontWeight: '600', fontSize: '15px' }}>{u.name} <span style={{ color: 'var(--ink-muted)', fontWeight: '400', fontSize: '12px' }}>#{u.id}</span> <span style={{ color: 'var(--coral)', fontSize: '13px', marginLeft: '6px' }}>★ {u.rating?.toFixed(1) || '5.0'}</span></div>
-                       <div style={{ color: 'var(--violet)', fontSize: '13px', marginTop: '4px', fontWeight: '600' }}>{u.role}</div>
-                    </td>
-                   <td style={{ padding: '18px 20px', color: 'var(--ink-soft)', fontSize: '14px' }}>
-                      <div>{t.lic} {u.licenseNumber || 'None Provided'}</div>
-                      {u.specialist && <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>{t.specialty} {u.specialist}</div>}
-                      <button onClick={() => handleViewCert(u.certificateData || u.certificatePath)} style={{ background: 'transparent', border: '1.5px solid var(--border)', color: 'var(--ink-soft)', padding: '5px 10px', borderRadius: '6px', fontSize: '12px', marginTop: '6px', cursor: 'pointer', fontWeight: '500' }}>{t.viewCredentials}</button>
-                   </td>
-                   <td style={{ padding: '18px 20px' }}>
-                      {u.isApproved ? (
-                         <span style={{ color: 'var(--mint)', background: 'var(--mint-pale)', padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '12px', fontWeight: '600' }}>{t.verified}</span>
-                      ) : (
-                         <span style={{ color: 'var(--coral)', background: '#ffedd5', padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '12px', fontWeight: '600' }}>{t.pendingReview}</span>
-                      )}
-                   </td>
-                   <td style={{ padding: '18px 20px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        {!u.isApproved && (
-                          <button onClick={() => handleApprove(u.id)} className="glow-button" style={{ background: 'var(--mint)', boxShadow: '0 4px 12px rgba(16,185,129,0.2)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>{t.approve}</button>
-                        )}
-                        <button onClick={() => handleRemove(u.id)} style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', border: '1.5px solid rgba(239, 68, 68, 0.2)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>{t.remove}</button>
-                      </div>
-                   </td>
-                 </tr>
-               ))}
-             </tbody>
-           </table>
-        )}
-      </div>
-    </div>
-  );
+  // ProviderTable component has been moved to the bottom of the file (outside AdminDashboard)
+  // to comply with React rendering rules and avoid recreating the component on every render.
 
   return (
     <div style={{ background: 'var(--surface)', minHeight: '100vh', width: '100%', padding: '40px 20px', position: 'relative' }}>
@@ -485,40 +564,236 @@ const AdminDashboard = () => {
           </div>
         </div>
         
-        <ProviderTable title={t.pendingApprovalQueue} dataset={pendingProviders} isPending={true} />
-        <ProviderTable title={t.verifiedMedicalProviders} dataset={verifiedProviders} isPending={false} />
-
-        <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--white)' }}>
-          <h3 className="serif-text" style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: 'var(--ink)' }}>{t.registeredPatients} ({patients.length})</h3>
-          <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflowX: 'auto', background: 'var(--white)' }}>
-            {patients.length === 0 ? (
-               <p style={{ color: 'var(--ink-muted)', padding: '2rem', textAlign: 'center' }}>{t.noPatients}</p>
-            ) : (
-               <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', minWidth: '600px' }}>
-                 <thead>
-                   <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-                     <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.patientName}</th>
-                     <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.email}</th>
-                     <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.age}</th>
-                     <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px', textAlign: 'right' }}>{t.actions}</th>
-                   </tr>
-                 </thead>
-                 <tbody>
-                    {patients.map(u => (
-                      <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '18px 20px', color: 'var(--ink)', fontWeight: '600', fontSize: '15px' }}>{u.name} <span style={{ color: 'var(--ink-muted)', fontWeight: '400', fontSize: '12px' }}>#{u.id}</span> <span style={{ color: 'var(--coral)', fontSize: '13px', marginLeft: '6px' }}>★ {u.rating?.toFixed(1) || '5.0'}</span></td>
-                       <td style={{ padding: '18px 20px', color: 'var(--ink-soft)', fontSize: '14px' }}>{u.email}</td>
-                       <td style={{ padding: '18px 20px', color: 'var(--ink)', fontSize: '14px' }}>{u.age || 'N/A'} {t.yearsOld}</td>
-                       <td style={{ padding: '18px 20px', textAlign: 'right' }}>
-                          <button onClick={() => handleRemove(u.id)} style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', border: '1.5px solid rgba(239, 68, 68, 0.2)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>{t.remove}</button>
-                       </td>
-                     </tr>
-                   ))}
-                 </tbody>
-               </table>
-            )}
-          </div>
+        {/* Navigation Tabs */}
+        <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '2rem', paddingBottom: '0.5rem', overflowX: 'auto' }}>
+          {[
+            { id: 'overview', label: t.tabOverview },
+            { id: 'approvals', label: `${t.tabApprovals} (${pendingProviders.length})` },
+            { id: 'providers', label: t.tabUsers },
+            { id: 'auditLogs', label: t.tabAuditLogs },
+            { id: 'activeSessions', label: t.tabSessions }
+          ].map(tab => (
+            <button 
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                background: 'none',
+                border: 'none',
+                borderBottom: activeTab === tab.id ? '2px solid var(--sky)' : 'none',
+                padding: '0.5rem 1rem',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                color: activeTab === tab.id ? 'var(--sky)' : 'var(--ink-soft)',
+                whiteSpace: 'nowrap',
+                outline: 'none'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
+
+        {activeTab === 'overview' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '2rem' }}>
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--white)' }}>
+              <h3 className="serif-text" style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: 'var(--ink)' }}>{t.analyticsTitle}</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+                <div style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '12px', background: 'var(--surface)' }}>
+                  <LineChart data={[150, 320, 290, 480, 560, 680]} labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']} title={t.revenueTrend} />
+                </div>
+                <div style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '12px', background: 'var(--surface)' }}>
+                  <BarChart data={[12, 19, 15, 25, 22, 30]} labels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']} title={t.appointmentVol} />
+                </div>
+                <div style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '12px', background: 'var(--surface)' }}>
+                  <DonutChart data={[15, 8, 5, 4]} labels={['General Medicine', 'Cardiology', 'Dermatology', 'Pediatrics']} title={t.topSpecialties} />
+                </div>
+                <div style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '12px', background: 'var(--surface)' }}>
+                  <BarChart data={[78, 85, 92, 64, 88]} labels={['Dr. Madhav', 'Dr. Sri', 'Dr. Gannina', 'Dr. Link', 'Dr. Smith']} title={t.doctorUtilization} />
+                </div>
+                <div style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '12px', background: 'var(--surface)' }}>
+                  <LineChart data={[45, 62, 58, 80, 95, 110]} labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']} title={t.prescriptionsIssued} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'approvals' && (
+          <ProviderTable 
+            title={t.pendingApprovalQueue} 
+            dataset={pendingProviders} 
+            isPending={true} 
+            t={t}
+            handleViewCert={handleViewCert}
+            handleApprove={handleApprove}
+            handleRemove={handleRemove}
+          />
+        )}
+
+        {activeTab === 'providers' && (
+          <>
+            <ProviderTable 
+              title={t.verifiedMedicalProviders} 
+              dataset={verifiedProviders} 
+              isPending={false} 
+              t={t}
+              handleViewCert={handleViewCert}
+              handleApprove={handleApprove}
+              handleRemove={handleRemove}
+            />
+
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--white)' }}>
+              <h3 className="serif-text" style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: 'var(--ink)' }}>{t.registeredPatients} ({patients.length})</h3>
+              <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflowX: 'auto', background: 'var(--white)' }}>
+                {patients.length === 0 ? (
+                   <p style={{ color: 'var(--ink-muted)', padding: '2rem', textAlign: 'center' }}>{t.noPatients}</p>
+                ) : (
+                   <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', minWidth: '600px' }}>
+                     <thead>
+                       <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                         <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.patientName}</th>
+                         <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.email}</th>
+                         <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.age}</th>
+                         <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px', textAlign: 'right' }}>{t.actions}</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                        {patients.map(u => (
+                          <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                            <td style={{ padding: '18px 20px', color: 'var(--ink)', fontWeight: '600', fontSize: '15px' }}>{u.name} <span style={{ color: 'var(--ink-muted)', fontWeight: '400', fontSize: '12px' }}>#{u.id}</span> <span style={{ color: 'var(--coral)', fontSize: '13px', marginLeft: '6px' }}>★ {u.rating?.toFixed(1) || '5.0'}</span></td>
+                           <td style={{ padding: '18px 20px', color: 'var(--ink-soft)', fontSize: '14px' }}>{u.email}</td>
+                           <td style={{ padding: '18px 20px', color: 'var(--ink)', fontSize: '14px' }}>{u.age || 'N/A'} {t.yearsOld}</td>
+                           <td style={{ padding: '18px 20px', textAlign: 'right' }}>
+                              <button onClick={() => handleRemove(u.id)} style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', border: '1.5px solid rgba(239, 68, 68, 0.2)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>{t.remove}</button>
+                           </td>
+                         </tr>
+                        ))}
+                     </tbody>
+                   </table>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'auditLogs' && (
+          <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--white)' }}>
+            <h3 className="serif-text" style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: 'var(--ink)' }}>{t.auditTitle}</h3>
+            <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflowX: 'auto', background: 'var(--white)' }}>
+              <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', minWidth: '800px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thTimestamp}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thUser}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thRole || 'Role'}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thAction}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thDetails}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: 'var(--ink-muted)', fontSize: '14px' }}>{t.noAuditLogs}</td>
+                    </tr>
+                  ) : (
+                    [...auditLogs].reverse().slice(0, 50).map(log => (
+                      <tr key={log.id} style={{ borderBottom: '1px solid var(--border)', fontSize: '13.5px' }}>
+                        <td style={{ padding: '16px 20px', color: 'var(--ink-soft)' }}>{new Date(log.timestamp).toLocaleString()}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--ink)', fontWeight: '600' }}>{log.userName} (ID: {log.userId})</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--violet)', fontWeight: '600' }}>{log.userRole}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--ink)' }}>
+                          <span style={{ 
+                            padding: '4px 8px', 
+                            borderRadius: '12px', 
+                            fontSize: '11px', 
+                            fontWeight: 'bold',
+                            background: log.action?.includes('SIGN_IN') ? 'var(--sky-pale)' : (log.action?.includes('DELETE') ? '#fee2e2' : 'var(--surface)'),
+                            color: log.action?.includes('SIGN_IN') ? 'var(--sky-dark)' : (log.action?.includes('DELETE') ? '#ef4444' : 'var(--ink-soft)')
+                          }}>
+                            {log.action}
+                          </span>
+                        </td>
+                        <td style={{ padding: '16px 20px', color: 'var(--ink-soft)' }}>{log.details}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'activeSessions' && (
+          <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--white)' }}>
+            <h3 className="serif-text" style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: 'var(--sky-dark)' }}>{t.sessionsTitle}</h3>
+            <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflowX: 'auto', background: 'var(--white)' }}>
+              <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', minWidth: '800px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.fullNameInput}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thRole || 'Role'}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thDevice}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thIp}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.thLastActive}</th>
+                    <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px', textAlign: 'right' }}>{t.actions}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    const activeSessionsList = [];
+                    users.forEach(u => {
+                      if (u.activeSessions) {
+                        try {
+                          const parsed = JSON.parse(u.activeSessions);
+                          if (Array.isArray(parsed)) {
+                            parsed.forEach((sess, idx) => {
+                              activeSessionsList.push({
+                                userId: u.id,
+                                userName: u.name,
+                                userRole: u.role,
+                                userEmail: u.email,
+                                device: sess.device || 'Unknown Device',
+                                ip: sess.ip || '127.0.0.1',
+                                lastActive: sess.lastActive || new Date().toISOString(),
+                                sessionIndex: idx
+                              });
+                            });
+                          }
+                        } catch (e) {
+                          console.error(e);
+                        }
+                      }
+                    });
+                    if (activeSessionsList.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: 'var(--ink-muted)', fontSize: '14px' }}>{t.noSessions}</td>
+                        </tr>
+                      );
+                    }
+                    return activeSessionsList.map((sess, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid var(--border)', fontSize: '13.5px' }}>
+                        <td style={{ padding: '16px 20px', color: 'var(--ink)', fontWeight: '600' }}>{sess.userName} <span style={{ fontWeight: 'normal', color: 'var(--ink-muted)', fontSize: '12px' }}>({sess.userEmail})</span></td>
+                        <td style={{ padding: '16px 20px', color: 'var(--violet)', fontWeight: '600' }}>{sess.userRole}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontFamily: 'monospace', fontSize: '12px' }}>{sess.device}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--ink-soft)' }}>{sess.ip}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--ink-soft)' }}>{new Date(sess.lastActive).toLocaleString()}</td>
+                        <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                          <button 
+                            onClick={() => handleForceLogout(sess.userId, sess.sessionIndex)} 
+                            style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', border: '1.5px solid rgba(239, 68, 68, 0.2)', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}
+                          >
+                            {t.btnForceLogout}
+                          </button>
+                        </td>
+                      </tr>
+                    ));
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
       </div>
 
@@ -614,6 +889,27 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+              {/* Two-Factor Authentication (2FA) Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                <input 
+                  type="checkbox" 
+                  disabled={!isEditingSettings}
+                  checked={settingsData.twoFactorEnabled || false}
+                  onChange={e => setSettingsData({...settingsData, twoFactorEnabled: e.target.checked})}
+                  id="toggle-2fa"
+                />
+                <label htmlFor="toggle-2fa" style={{ fontWeight: '600', color: 'var(--ink)', cursor: 'pointer', fontSize: '13px' }}>
+                  {t.enable2fa}
+                </label>
+              </div>
+              {settingsData.twoFactorEnabled && (
+                <div style={{ marginTop: '15px', padding: '12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--ink-soft)', fontWeight: '600', textAlign: 'center' }}>{t.scan2faQr}</span>
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=otpauth://totp/MedConnect:${settingsData.email}?secret=MC2FAADMINSECRET&issuer=MedConnect`} alt="2FA QR Code" width="140" height="140" />
+                  <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--ink-muted)' }}>{t.secretKey} MC-2FA-ADMIN-KEY</span>
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                 {!isEditingSettings ? (
                   <>
@@ -634,5 +930,57 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
+const ProviderTable = ({ title, dataset, isPending = false, t, handleViewCert, handleApprove, handleRemove }) => (
+  <div className="glass-card" style={{ padding: '2rem', marginBottom: '2rem', background: 'var(--white)' }}>
+    <h3 className="serif-text" style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: isPending ? 'var(--coral)' : 'var(--mint)' }}>{title} ({dataset.length})</h3>
+    <div style={{ border: '1px solid var(--border)', borderRadius: '12px', overflowX: 'auto', background: 'var(--white)' }}>
+      {dataset.length === 0 ? (
+         <p style={{ color: 'var(--ink-muted)', padding: '2rem', textAlign: 'center' }}>{t.noProviders}</p>
+      ) : (
+         <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', minWidth: '800px' }}>
+           <thead>
+             <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+               <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.providerNameRole}</th>
+               <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.credentials}</th>
+               <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px' }}>{t.status}</th>
+               <th style={{ padding: '16px 20px', color: 'var(--ink-soft)', fontWeight: '600', fontSize: '14px', textAlign: 'right' }}>{t.actions}</th>
+             </tr>
+           </thead>
+           <tbody>
+             {dataset.map(u => (
+               <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '18px 20px' }}>
+                     <div style={{ color: 'var(--ink)', fontWeight: '600', fontSize: '15px' }}>{u.name} <span style={{ color: 'var(--ink-muted)', fontWeight: '400', fontSize: '12px' }}>#{u.id}</span> <span style={{ color: 'var(--coral)', fontSize: '13px', marginLeft: '6px' }}>★ {u.rating?.toFixed(1) || '5.0'}</span></div>
+                     <div style={{ color: 'var(--violet)', fontSize: '13px', marginTop: '4px', fontWeight: '600' }}>{u.role}</div>
+                  </td>
+                 <td style={{ padding: '18px 20px', color: 'var(--ink-soft)', fontSize: '14px' }}>
+                    <div>{t.lic} {u.licenseNumber || 'None Provided'}</div>
+                    {u.specialist && <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>{t.specialty} {u.specialist}</div>}
+                    <button onClick={() => handleViewCert(u.certificateData || u.certificatePath)} style={{ background: 'transparent', border: '1.5px solid var(--border)', color: 'var(--ink-soft)', padding: '5px 10px', borderRadius: '6px', fontSize: '12px', marginTop: '6px', cursor: 'pointer', fontWeight: '500' }}>{t.viewCredentials}</button>
+                 </td>
+                 <td style={{ padding: '18px 20px' }}>
+                    {u.isApproved ? (
+                       <span style={{ color: 'var(--mint)', background: 'var(--mint-pale)', padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '12px', fontWeight: '600' }}>{t.verified}</span>
+                    ) : (
+                       <span style={{ color: 'var(--coral)', background: '#ffedd5', padding: '5px 12px', borderRadius: 'var(--radius-full)', fontSize: '12px', fontWeight: '600' }}>{t.pendingReview}</span>
+                    )}
+                 </td>
+                 <td style={{ padding: '18px 20px', textAlign: 'right' }}>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      {!u.isApproved && (
+                        <button onClick={() => handleApprove(u.id)} className="glow-button" style={{ background: 'var(--mint)', boxShadow: '0 4px 12px rgba(16,185,129,0.2)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>{t.approve}</button>
+                      )}
+                      <button onClick={() => handleRemove(u.id)} style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', border: '1.5px solid rgba(239, 68, 68, 0.2)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>{t.remove}</button>
+                    </div>
+                 </td>
+               </tr>
+             ))}
+           </tbody>
+         </table>
+      )}
+    </div>
+  </div>
+);
 
 export default AdminDashboard;

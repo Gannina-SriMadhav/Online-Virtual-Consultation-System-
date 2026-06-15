@@ -251,4 +251,36 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+/* Skeleton Loaders */
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.skeleton-card {
+  background: linear-gradient(90deg, var(--white) 25%, var(--border) 50%, var(--white) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.skeleton-text {
+  background: linear-gradient(90deg, var(--border) 25%, var(--surface) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  height: 14px;
+  border-radius: 4px;
+}
+
+@keyframes qr-scan-anim {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
 

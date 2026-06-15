@@ -23,7 +23,7 @@ export const parseAvailability = (configStr) => {
       vacations: parsed.vacations || DEFAULT_AVAILABILITY.vacations,
       leaves: parsed.leaves || DEFAULT_AVAILABILITY.leaves
     };
-  } catch (e) {
+  } catch {
     return DEFAULT_AVAILABILITY;
   }
 };

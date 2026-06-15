@@ -7,7 +7,7 @@ const TRANSLATIONS = {
   en: {
     backToHome: "← Back to Home",
     createAccount: "Create Account",
-    registerSubtitle: "Join MediLink's healthcare network",
+    registerSubtitle: "Join MedConnect's healthcare network",
     registerAsLabel: "I want to register as a:",
     patientOption: "Patient",
     doctorOption: "Doctor",
@@ -39,7 +39,7 @@ const TRANSLATIONS = {
   hi: {
     backToHome: "← होम पर वापस जाएं",
     createAccount: "खाता बनाएं",
-    registerSubtitle: "मेडीलिंक के स्वास्थ्य नेटवर्क में शामिल हों",
+    registerSubtitle: "मेडकनेक्ट के स्वास्थ्य नेटवर्क में शामिल हों",
     registerAsLabel: "मैं इस रूप में पंजीकरण करना चाहता हूँ:",
     patientOption: "मरीज",
     doctorOption: "डॉक्टर",
@@ -71,7 +71,7 @@ const TRANSLATIONS = {
   te: {
     backToHome: "← హోమ్‌కి తిరిగి వెళ్లు",
     createAccount: "ఖాతాను సృష్టించండి",
-    registerSubtitle: "మెడిలింక్ యొక్క ఆరోగ్య సంరక్షణ నెట్‌వర్క్‌లో చేరండి",
+    registerSubtitle: "మెడ్‌కనెక్ట్ యొక్క ఆరోగ్య సంరక్షణ నెట్‌వర్క్‌లో చేరండి",
     registerAsLabel: "నేను ఇలా నమోదు చేసుకోవాలనుకుంటున్నాను:",
     patientOption: "రోగి",
     doctorOption: "వైద్యుడు",
@@ -146,6 +146,7 @@ const Register = () => {
         toast.error(errMsg || t.registrationFailed);
       }
     } catch (err) {
+      console.error(err);
       toast.error(t.backendError);
     }
   };

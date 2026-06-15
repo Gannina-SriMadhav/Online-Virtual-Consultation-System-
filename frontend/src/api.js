@@ -27,7 +27,7 @@ export const getPatientAppointments = async (patientId) => {
         const res = await fetch(`${API_BASE}/appointments/patient/${patientId}`);
         if (!res.ok) return [];
         return await res.json();
-    } catch(e) { return []; }
+    } catch { return []; }
 };
 
 export const getDoctorConsultations = async (doctorId) => {
@@ -35,7 +35,7 @@ export const getDoctorConsultations = async (doctorId) => {
         const res = await fetch(`${API_BASE}/appointments/doctor/${doctorId}`);
         if (!res.ok) return [];
         return await res.json();
-    } catch(e) { return []; }
+    } catch { return []; }
 };
 
 export const getPatientRecords = async (patientId) => {
@@ -43,7 +43,7 @@ export const getPatientRecords = async (patientId) => {
         const res = await fetch(`${API_BASE}/records/patient/${patientId}`);
         if (!res.ok) return [];
         return await res.json();
-    } catch(e) { return []; }
+    } catch { return []; }
 };
 
 export const getAllPrescriptions = async () => {
@@ -51,7 +51,7 @@ export const getAllPrescriptions = async () => {
         const res = await fetch(`${API_BASE}/prescriptions`);
         if (!res.ok) return [];
         return await res.json();
-    } catch(e) { return []; }
+    } catch { return []; }
 };
 
 export const fulfillPrescription = async (id) => {
@@ -64,7 +64,7 @@ export const getAllUsers = async () => {
         const res = await fetch(`${API_BASE}/users`);
         if (!res.ok) return [];
         return await res.json();
-    } catch(e) { return []; }
+    } catch { return []; }
 };
 
 export const createAppointment = async (appt) => {
@@ -151,7 +151,7 @@ export const getAuditLogs = async () => {
         const res = await fetch(`${API_BASE}/audit-logs`);
         if (!res.ok) return [];
         return await res.json();
-    } catch(e) { return []; }
+    } catch { return []; }
 };
 
 export const createAuditLog = async (userId, userName, userRole, action, details) => {
@@ -161,6 +161,6 @@ export const createAuditLog = async (userId, userName, userRole, action, details
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, userName, userRole, action, details })
         });
-    } catch(e) {}
+    } catch { console.error("Audit log creation failed"); }
 };
 

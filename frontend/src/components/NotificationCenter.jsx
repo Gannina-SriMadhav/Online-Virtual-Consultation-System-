@@ -10,7 +10,6 @@ const NotificationCenter = () => {
   };
 
   useEffect(() => {
-    updateNotifications();
     window.addEventListener('medconnect_notification_update', updateNotifications);
     return () => {
       window.removeEventListener('medconnect_notification_update', updateNotifications);

@@ -1026,14 +1026,8 @@ footer {
   background: #f8fafc;
   display: flex;
   gap: 8px;
-  overflow-x: auto;
-  white-space: nowrap;
+  flex-wrap: wrap;
   border-top: 1px solid rgba(0, 0, 0, 0.03);
-  scrollbar-width: none;
-}
-
-.ai-guide-suggestions::-webkit-scrollbar {
-  display: none;
 }
 
 .ai-suggestion-chip {

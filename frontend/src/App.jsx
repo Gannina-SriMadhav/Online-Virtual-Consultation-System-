@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
@@ -12,6 +12,11 @@ import { Toaster } from 'react-hot-toast';
 import './App.css';
 
 function App() {
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+  }, []);
+
   return (
     <Router>
       <div className="app-container">

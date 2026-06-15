@@ -142,12 +142,10 @@ export const DonutChart = ({ data = [], labels = [], title = "Top Specialties" }
   const total = data.reduce((a, b) => a + b, 0);
   const colors = ['#863bff', '#10b981', '#f59e0b', '#3b82f6', '#ec4899'];
 
-  let accumulatedPercent = 0;
-
   const segments = data.map((val, idx) => {
     const percent = total > 0 ? val / total : 0;
-    const startPercent = accumulatedPercent;
-    accumulatedPercent += percent;
+    const startVal = data.slice(0, idx).reduce((sum, v) => sum + v, 0);
+    const startPercent = total > 0 ? startVal / total : 0;
     return {
       val,
       label: labels[idx],

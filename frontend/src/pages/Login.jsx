@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { loginUser, getAllUsers, updateUserProfile, createAuditLog, API_BASE } from '../api';
+import { getAllUsers, updateUserProfile, createAuditLog, API_BASE } from '../api';
+import { sendOTPVerificationSMS } from '../utils/notifications';
 
 const TRANSLATIONS = {
   en: {
@@ -121,6 +122,16 @@ const Login = () => {
           const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
           setTempOtp(generatedOtp);
           setShowOtpPrompt(true);
+
+          try {
+            const users = await getAllUsers();
+            const me = (users || []).find(u => u.email.toLowerCase() === email.toLowerCase() || u.phoneNumber === email);
+            const userPhone = me ? me.phoneNumber : 'N/A';
+            sendOTPVerificationSMS(userPhone, generatedOtp);
+          } catch (err) {
+            console.error("Failed to send 2FA SMS:", err);
+          }
+
           toast.success(`Verification OTP [${generatedOtp}] sent to registered device (simulated SMS/email).`);
           return;
         }

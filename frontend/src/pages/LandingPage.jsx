@@ -24,7 +24,7 @@ const getAIResponse = (userMessage) => {
   // Login
   if (msg.includes('login') || msg.includes('log in') || msg.includes('signin') || msg.includes('sign in') || 
       msg.includes('log-in') || msg.includes('sign-in')) {
-    return "🔑 Logging In\n\n• You can log in to MediLink by clicking 'Log in' at the top right of the page.\n• Authenticate using either your registered Email Address OR your Mobile Number along with your password.";
+    return "🔑 Logging In\n\n• You can log in to MedConnect by clicking 'Log in' at the top right of the page.\n• Authenticate using either your registered Email Address OR your Mobile Number along with your password.";
   }
   
   // Registration, creating account, sign up, joining (handling typos like registrartion, registraion, regestration, regester, etc.)
@@ -64,14 +64,14 @@ const getAIResponse = (userMessage) => {
   
   // Security/HIPAA/Encryption
   if (msg.includes('security') || msg.includes('hipaa') || msg.includes('encrypt') || msg.includes('privacy')) {
-    return "🔒 Security & HIPAA Compliance\n\n• E2E Encryption: All video/audio consultation rooms are end-to-end WebRTC encrypted.\n• HIPAA Alignment: Protected Health Information (PHI) is encrypted at rest and in transit.\n• Data Protection: Strict separation of roles prevents unauthorized access to patients' clinical records.";
+    return "🔒 HIPAA-inspired Security Practices\n\n• E2E Encryption: All video/audio consultation rooms are end-to-end WebRTC encrypted.\n• Designed with HIPAA Security Principles: Protected Health Information (PHI) is encrypted at rest and in transit.\n• Data Protection: Strict separation of roles prevents unauthorized access to patients' clinical records.";
   }
   
   if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey') || msg.includes('guide')) {
-    return "Hello! I am your MediLink Guide AI. 🤖 I'm here to help you navigate our virtual healthcare system. What would you like to know? You can ask me about:\n\n• Doctor or Patient registration\n• Booking virtual appointments\n• Legit Handover Codes for prescriptions\n• Patient report sharing during live calls\n• Admin verification and approvals\n• Platform security and HIPAA compliance\n• Support or website updates";
+    return "Hello! I am your MedConnect Guide AI. 🤖 I'm here to help you navigate our virtual healthcare system. What would you like to know? You can ask me about:\n\n• Doctor or Patient registration\n• Booking virtual appointments\n• Legit Handover Codes for prescriptions\n• Patient report sharing during live calls\n• Admin verification and approvals\n• Platform security and HIPAA-inspired practices\n• Support or website updates";
   }
   
-  return "I'm not sure I understand that completely. 😅 As your MediLink Guide, I can help you with:\n\n• Booking virtual appointments (scheduling consultations)\n• Doctor/Patient Registration (roles, approvals)\n• Legit Handover Codes (dispensing medicines with ML-XXXX code)\n• Live Call Document Sharing (patient blood reports)\n• Admin Controls (approving credentials, user deletion)\n• Support or Website Updates (email contact)\n\nCould you please rephrase or click one of the quick suggestions?";
+  return "I'm not sure I understand that completely. 😅 As your MedConnect Guide, I can help you with:\n\n• Booking virtual appointments (scheduling consultations)\n• Doctor/Patient Registration (roles, approvals)\n• Legit Handover Codes (dispensing medicines with ML-XXXX code)\n• Live Call Document Sharing (patient blood reports)\n• Admin Controls (approving credentials, user deletion)\n• Support or Website Updates (email contact)\n\nCould you please rephrase or click one of the quick suggestions?";
 };
 
 const TRANSLATIONS = {
@@ -158,7 +158,7 @@ const TRANSLATIONS = {
     habitMsg4: "Perfect Day! Health goals accomplished! 🏆",
     featuresTag: "Platform features",
     featuresTitle: "Everything healthcare needs, digitized",
-    feat1Title: "HIPAA-grade security",
+    feat1Title: "Designed with HIPAA security principles",
     feat1Desc: "End-to-end encryption, role-based access control, and complete audit trails for all clinical data.",
     feat2Title: "HD video consultations",
     feat2Desc: "WebRTC-powered video calls with screen sharing, call toggles, and low connectivity adaptation.",
@@ -173,24 +173,25 @@ const TRANSLATIONS = {
     feat7Title: "Smart notifications",
     feat7Desc: "Automated alerts for appointments, new records, and prescription fulfillments in real-time.",
     feat8Title: "AI symptom checker",
-    feat8Desc: "Pre-consultation triage collects symptoms and recommends specialists, speeding up clinical pathways.",
+    feat8Desc: "AI suggests potential specialties based on symptoms and does not provide medical diagnosis.",
     feat9Title: "Analytics dashboards",
     feat9Desc: "Rich dashboards for admins, doctors, and pharmacists with consultation volumes and user tracking.",
     ctaTitle: "Start your virtual consultation today",
-    ctaDesc: "MediLink is fully open-source, HIPAA compliant, and deployment ready. Create a profile or log in to launch your medical room.",
+    ctaDesc: "MedConnect is fully open-source, designed with HIPAA security principles, and deployment ready. Create a profile or log in to launch your medical room.",
     ctaRegister: "Get started free →",
     ctaLogin: "Access Portals",
     privacyPolicy: "Privacy policy",
     termsOfService: "Terms of service",
-    hipaaCompliance: "HIPAA Compliance",
+    hipaaCompliance: "Designed with HIPAA security principles",
+    termsAndPolicies: "Terms & Policies",
     systemStatus: "System status: Online",
     systemStatusToast: "System Status: Online 🟢 All clinical servers operational.",
-    copyright: "© 2026 MedLink with Madhav",
-    aiWelcome: "Hello! I am your MediLink Guide AI. 🤖 I'm here to help you understand all aspects of the platform. Ask me anything or select a topic below!",
+    copyright: "© 2026 MedConnect with Madhav",
+    aiWelcome: "Hello! I am your MedConnect Guide AI. 🤖 I'm here to help you understand all aspects of the platform. Ask me anything or select a topic below!",
     aiChipReport: "🧑‍⚕️ Report Sharing",
     aiChipRx: "💊 Legit Prescriptions",
     aiChipDoc: "🩺 Doctor Verification",
-    aiChipSecurity: "🔒 HIPAA & Security"
+    aiChipSecurity: "🔒 Designed with HIPAA principles & Security"
   },
   hi: {
     portals: "पोर्टल",
@@ -275,7 +276,7 @@ const TRANSLATIONS = {
     habitMsg4: "शानदार दिन! स्वास्थ्य लक्ष्य पूरे हुए! 🏆",
     featuresTag: "मंच की विशेषताएं",
     featuresTitle: "स्वास्थ्य सेवा की हर जरूरत, डिजिटल रूप में",
-    feat1Title: "HIPAA-ग्रेड सुरक्षा",
+    feat1Title: "HIPAA सुरक्षा सिद्धांतों के साथ डिज़ाइन किया गया",
     feat1Desc: "सभी क्लिनिकल डेटा के लिए एंड-टू-एंड एन्क्रिप्शन, भूमिका-आधारित पहुंच नियंत्रण और पूर्ण ऑडिट ट्रेल्स।",
     feat2Title: "एचडी वीडियो परामर्श",
     feat2Desc: "स्क्रीन शेयरिंग, कॉल टॉगल और कम कनेक्टिविटी अनुकूलन के साथ वेबआरटीसी-संचालित वीडियो कॉल।",
@@ -290,24 +291,25 @@ const TRANSLATIONS = {
     feat7Title: "स्मार्ट सूचनाएं",
     feat7Desc: "वास्तविक समय में नियुक्तियों, नए रिकॉर्ड और नुस्खे की पूर्ति के लिए स्वचालित अलर्ट।",
     feat8Title: "एआई लक्षण चेकर",
-    feat8Desc: "पूर्व-परामर्श ट्राइएज लक्षणों को एकत्र करता है और विशेषज्ञों की सिफारिश करता है, जिससे नैदानिक रास्ते तेज हो जाते हैं।",
+    feat8Desc: "एआई लक्षणों के आधार पर संभावित विशिष्टताओं का सुझाव देता है और चिकित्सा निदान प्रदान नहीं करता है।",
     feat9Title: "विश्लेषिकी डैशबोर्ड",
     feat9Desc: "परामर्श मात्रा और उपयोगकर्ता ट्रैकिंग के साथ एडमिन, डॉक्टरों और फार्मासिस्टों के लिए समृद्ध डैशबोर्ड।",
     ctaTitle: "आज ही अपना वर्चुअल परामर्श शुरू करें",
-    ctaDesc: "MediLink पूरी तरह से ओपन-सोर्स, HIPAA आज्ञाकारी और परिनियोजन के लिए तैयार है। अपना मेडिकल रूम शुरू करने के लिए एक प्रोफाइल बनाएं या लॉग इन करें।",
+    ctaDesc: "MedConnect पूरी तरह से ओपन-सोर्स है, जिसे HIPAA सुरक्षा सिद्धांतों को ध्यान में रखकर तैयार किया गया है और यह परिनियोजन के लिए तैयार है। अपना मेडिकल रूम शुरू करने के लिए एक प्रोफाइल बनाएं या लॉग इन करें।",
     ctaRegister: "मुफ्त में शुरू करें →",
     ctaLogin: "पोर्टल तक पहुंचें",
     privacyPolicy: "गोपनीयता नीति",
     termsOfService: "सेवा की शर्तें",
-    hipaaCompliance: "HIPAA अनुपालन",
+    hipaaCompliance: "HIPAA सुरक्षा सिद्धांतों के अनुसार डिज़ाइन किया गया",
+    termsAndPolicies: "नियम और नीतियां",
     systemStatus: "सिस्टम स्थिति: ऑनलाइन",
     systemStatusToast: "सिस्टम स्थिति: ऑनलाइन 🟢 सभी नैदानिक सर्वर चालू हैं।",
-    copyright: "© 2026 MedLink माघव के साथ",
-    aiWelcome: "नमस्ते! मैं आपका मेडिलिंक गाइड एआई हूँ। 🤖 मैं यहाँ आपको मंच के सभी पहलुओं को समझने में मदद करने के लिए हूँ। मुझसे कुछ भी पूछें या नीचे एक विषय चुनें!",
+    copyright: "© 2026 MedConnect माघव के साथ",
+    aiWelcome: "नमस्ते! मैं आपका मेडकनेक्ट गाइड एआई हूँ। 🤖 मैं यहाँ आपको मंच के सभी पहलुओं को समझने में मदद करने के लिए हूँ। मुझसे कुछ भी पूछें या नीचे एक विषय चुनें!",
     aiChipReport: "🧑‍⚕️ रिपोर्ट शेयरिंग",
     aiChipRx: "💊 वैध नुस्खे",
     aiChipDoc: "🩺 डॉक्टर सत्यापन",
-    aiChipSecurity: "🔒 HIPAA और सुरक्षा"
+    aiChipSecurity: "🔒 HIPAA सिद्धांतों और सुरक्षा"
   },
   te: {
     portals: "పోర్టల్స్",
@@ -392,7 +394,7 @@ const TRANSLATIONS = {
     habitMsg4: "అద్భుతమైన రోజు! ఆరోగ్య లక్ష్యాలు పూర్తయ్యాయి! 🏆",
     featuresTag: "వేదిక ఫీచర్లు",
     featuresTitle: "ఆరోగ్య సంరక్షణకు అవసరమైన ప్రతిదీ, డిజిటల్‌గా",
-    feat1Title: "HIPAA-స్థాయి భద్రత",
+    feat1Title: "HIPAA భద్రతా సూత్రాలతో రూపొందించబడింది",
     feat1Desc: "అన్ని క్లినికల్ డేటా కోసం ఎండ్-టు-ఎండ్ ఎన్‌క్రిప్షన్, పాత్రల ఆధారిత యాక్సెస్ మరియు పూర్తి ఆడిట్ వివరాలు.",
     feat2Title: "హెచ్‌డీ వీడియో సంప్రదింపులు",
     feat2Desc: "స్క్రీన్ షేరింగ్, కాల్ ఆన్/ఆఫ్ మరియు తక్కువ ఇంటర్నెట్ వేగానికి అనుకూలంగా పనిచేసే వెబ్‌ఆర్‌టీసీ వీడియో కాల్స్.",
@@ -407,24 +409,25 @@ const TRANSLATIONS = {
     feat7Title: "స్మార్ట్ నోటిఫికేషన్లు",
     feat7Desc: "నియమకాలు, కొత్త రికార్డులు మరియు ప్రిస్క్రిప్షన్ల అమలు కోసం నిజ సమయంలో స్వయంచాలక హెచ్చరికలు.",
     feat8Title: "AI లక్షణాల చెకర్",
-    feat8Desc: "సంప్రదింపుకు ముందే లక్షణాలను సేకరించి, నిపుణులను సిఫార్సు చేస్తుంది, తద్వారా వైద్య చికిత్స ప్రక్రియ వేగవంతమవుతుంది.",
+    feat8Desc: "AI లక్షణాల ఆధారంగా సంభావ్య స్పెషాలిటీలను సూచిస్తుంది మరియు వైద్య నిర్ధారణను అందించదు.",
     feat9Title: "అనలిటిక్స్ డ్యాష్‌బోర్డ్‌లు",
     feat9Desc: "సంప్రదింపుల పరిమాణం మరియు వినియోగదారుల ట్రాకింగ్‌తో అడ్మిన్‌లు, వైద్యులు మరియు ఫార్మాసిస్ట్‌ల కోసం రిచ్ డ్యాష్‌బోర్డ్‌లు.",
     ctaTitle: "ఈరోజే మీ వర్చువల్ సంప్రదింపులను ప్రారంభించండి",
-    ctaDesc: "MediLink పూర్తిగా ఓపెన్-సోర్స్, HIPAA నిబంధనలకు కట్టుబడి ఉంటుంది మరియు వినియోగానికి సిద్ధంగా ఉంది. మీ వైద్య గదిని ప్రారంభించడానికి ప్రొఫైల్‌ను సృష్టించండి లేదా లాగిన్ అవ్వండి.",
+    ctaDesc: "MedConnect పూర్తిగా ఓపెన్-సోర్స్, HIPAA భద్రతా సూత్రాలతో రూపొందించబడింది మరియు వినియోగానికి సిద్ధంగా ఉంది. మీ వైద్య గదిని ప్రారంభించడానికి ప్రొఫైల్‌ను సృష్టించండి లేదా లాగిన్ అవ్వండి.",
     ctaRegister: "ఉచితంగా ప్రారంభించండి →",
     ctaLogin: "పోర్టల్స్ యాక్సెస్ చేయండి",
     privacyPolicy: "గోప్యతా విధానం",
     termsOfService: "సేవా నిబంధనలు",
-    hipaaCompliance: "HIPAA సమ్మతి",
+    hipaaCompliance: "HIPAA భద్రతా సూత్రాలతో రూపొందించబడింది",
+    termsAndPolicies: "నిబంధనలు & విధానాలు",
     systemStatus: "సిస్టమ్ స్థితి: ఆన్‌లైన్",
     systemStatusToast: "సిస్టమ్ స్థితి: ఆన్‌లైన్ 🟢 అన్ని క్లినికల్ సర్వర్లు పనిచేస్తున్నాయి.",
-    copyright: "© 2026 మాధవ్‌తో కూడిన మెడ్‌లింక్",
-    aiWelcome: "నమస్కారం! నేను మీ మెడ్‌లింక్ గైడ్ AI. 🤖 ప్లాట్‌ఫారమ్‌కు సంబంధించిన అన్ని అంశాలను అర్థం చేసుకోవడంలో మీకు సహాయం చేయడానికి నేను ఇక్కడ ఉన్నాను. నన్ను ఏదైనా అడగండి లేదా దిగువన ఒక అంశాన్ని ఎంచుకోండి!",
+    copyright: "© 2026 మాధవ్‌తో కూడిన మెడ్‌కనెక్ట్",
+    aiWelcome: "నమస్కారం! నేను మీ మెడ్‌కనెక్ట్ గైడ్ AI. 🤖 ప్లాట్‌ఫారమ్‌కు సంబంధించిన అన్ని అంశాలను అర్థం చేసుకోవడంలో మీకు సహాయం చేయడానికి నేను ఇక్కడ ఉన్నాను. నన్ను ఏదైనా అడగండి లేదా దిగువన ఒక అంశాన్ని ఎంచుకోండి!",
     aiChipReport: "🧑‍⚕️ రిపోర్ట్ షేరింగ్",
     aiChipRx: "💊 నిజమైన ప్రిస్క్రిప్షన్లు",
     aiChipDoc: "🩺 వైద్యుల ధృవీకరణ",
-    aiChipSecurity: "🔒 HIPAA & భద్రత"
+    aiChipSecurity: "🔒 HIPAA సూత్రాలు & భద్రత"
   }
 };
 
@@ -490,7 +493,7 @@ const TRANSLATIONS = {
     feat3Title: "డిజిటల్ ఈ-ప్రిస్క్రిప్షన్లు",
     feat3Desc: "భద్రతా కోడ్‌లతో కూడిన డిజిటల్ సంతకం చేసిన ప్రిస్క్రిప్షన్లు, నిజ సమయంలో నేరుగా ఫార్మాసిస్టులకు పంపబడతాయి.",
     ctaTitle: "ఈరోజే మీ వర్చువల్ సంప్రదింపులను ప్రారంభించండి",
-    ctaDesc: "MediLink పూర్తిగా ఓపెన్-సోర్స్, HIPAA నిబంధనలకు కట్టుబడి ఉంటుంది మరియు వినియోగానికి సిద్ధంగా ఉంది. మీ వైద్య గదిని ప్రారంభించడానికి ప్రొఫైల్‌ను సృష్టించండి లేదా లాగిన్ అవ్వండి."
+    ctaDesc: "MedConnect పూర్తిగా ఓపెన్-సోర్స్, HIPAA నిబంధనలకు కట్టుబడి ఉంటుంది మరియు వినియోగానికి సిద్ధంగా ఉంది. మీ వైద్య గదిని ప్రారంభించడానికి ప్రొఫైల్‌ను సృష్టించండి లేదా లాగిన్ అవ్వండి."
   }
 */
 
@@ -501,6 +504,7 @@ const LandingPage = () => {
   const [patientsCount, setPatientsCount] = useState(0);
   const [doctorsCount, setDoctorsCount] = useState(0);
   const [policyTab, setPolicyTab] = useState(null); // 'privacy' | 'terms' | 'hipaa'
+  const [legalSubTab, setLegalSubTab] = useState('terms'); // 'terms' | 'privacy' | 'hipaa'
 
   // Daily Habits Tracker state
   const [water, setWater] = useState(1500);
@@ -514,13 +518,9 @@ const LandingPage = () => {
     {
       id: 1,
       sender: 'system',
-      text: TRANSLATIONS.en.aiWelcome
+      text: null
     }
   ]);
-
-  useEffect(() => {
-    setChatMessages(prev => prev.map(msg => msg.id === 1 ? { ...msg, text: t.aiWelcome } : msg));
-  }, [currentLang]);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -563,17 +563,11 @@ const LandingPage = () => {
       {
         id: 1,
         sender: 'system',
-        text: t.aiWelcome
+        text: null
       }
     ]);
     toast.success(currentLang === 'en' ? "Chat history cleared." : currentLang === 'hi' ? "चैट इतिहास साफ किया गया।" : "చాట్ చరిత్ర క్లియర్ చేయబడింది.");
   };
-
-  useEffect(() => {
-    fetchStats();
-    const interval = setInterval(fetchStats, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const fetchStats = async () => {
     try {
@@ -589,6 +583,14 @@ const LandingPage = () => {
     }
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      fetchStats();
+    }, 0);
+    const interval = setInterval(fetchStats, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   const waterPct = Math.min(Math.round((water / 3000) * 100), 100);
   const stepsPct = Math.min(Math.round((steps / 10000) * 100), 100);
   const activePct = Math.min(Math.round((activeMins / 45) * 100), 100);
@@ -603,7 +605,7 @@ const LandingPage = () => {
             <div className="logo-mark">
               <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4zm1 11h-2v-2h2v2zm0-4h-2V6h2v3z"/></svg>
             </div>
-            <span className="logo-text">MediLink</span>
+            <span className="logo-text">MedConnect</span>
           </Link>
           <div className="nav-links">
             <a href="#roles">{t.portals}</a>
@@ -757,6 +759,144 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Policy Modal Overlay */}
+      {policyTab === 'legal' && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(11,18,32,0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000 }}>
+          <div className="glass-card" style={{ padding: '2.5rem', width: '90%', maxWidth: '650px', maxHeight: '80vh', overflowY: 'auto', background: 'var(--white)', border: '1px solid var(--border)', textAlign: 'left' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+              <h3 className="serif-text" style={{ fontSize: '1.8rem', margin: 0, color: 'var(--ink)' }}>
+                ⚖️ {t.termsAndPolicies}
+              </h3>
+              <button onClick={() => setPolicyTab(null)} style={{ background: 'transparent', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer', fontSize: '1.5rem' }}>✕</button>
+            </div>
+
+            {/* Sub Tabs */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-soft)', paddingBottom: '10px' }}>
+              <button 
+                onClick={() => setLegalSubTab('terms')} 
+                style={{ 
+                  padding: '8px 16px', 
+                  borderRadius: '6px', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  fontSize: '13px', 
+                  fontWeight: '600',
+                  background: legalSubTab === 'terms' ? 'var(--sky)' : 'transparent',
+                  color: legalSubTab === 'terms' ? 'white' : 'var(--ink-soft)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {t.termsOfService}
+              </button>
+              <button 
+                onClick={() => setLegalSubTab('privacy')} 
+                style={{ 
+                  padding: '8px 16px', 
+                  borderRadius: '6px', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  fontSize: '13px', 
+                  fontWeight: '600',
+                  background: legalSubTab === 'privacy' ? 'var(--sky)' : 'transparent',
+                  color: legalSubTab === 'privacy' ? 'white' : 'var(--ink-soft)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {t.privacyPolicy}
+              </button>
+              <button 
+                onClick={() => setLegalSubTab('hipaa')} 
+                style={{ 
+                  padding: '8px 16px', 
+                  borderRadius: '6px', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  fontSize: '13px', 
+                  fontWeight: '600',
+                  background: legalSubTab === 'hipaa' ? 'var(--sky)' : 'transparent',
+                  color: legalSubTab === 'hipaa' ? 'white' : 'var(--ink-soft)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {t.hipaaCompliance}
+              </button>
+            </div>
+
+            <div style={{ color: 'var(--ink-soft)', fontSize: '0.95rem', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              {legalSubTab === 'terms' && (
+                <>
+                  <p><strong>Last Updated: June 15, 2026</strong></p>
+                  <p>Welcome to MedConnect. By creating an account or using our telehealth platform, you agree to comply with and be bound by the following comprehensive Terms of Service. Please review them carefully.</p>
+                  
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>1. Scope of Services & Intermediation</h4>
+                  <p>MedConnect is a digital health platform providing software solutions that enable patients to schedule and attend virtual consultations with licensed healthcare professionals. MedConnect is a technological platform and does not directly provide medical care, diagnoses, or prescriptions. All diagnostic decisions and treatments are the sole responsibility of the consulting practitioner.</p>
+                  
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>2. Emergency Exclusions</h4>
+                  <div style={{ background: '#fffbeb', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid #f59e0b', margin: '10px 0' }}>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#b45309', fontWeight: '600' }}>⚠️ EMERGENCY WARNING: NOT FOR ACUTE CRISIS CARE</p>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#b45309' }}>If you are experiencing a life-threatening medical emergency, active chest pain, severe shortness of breath, or trauma, do not use this platform. Call emergency services (911, 112, or your local emergency number) immediately.</p>
+                  </div>
+                  
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>3. User Verification & Accounts</h4>
+                  <p>To access telemedicine portals, users must provide accurate, current, and complete details, including legal name, age, and valid contact channels. Providers (Doctors and Pharmacists) must upload verifiable license credentials which are subject to manual administrative review and approval before platform entry is granted.</p>
+
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>4. Billing, Fees & Cancellation</h4>
+                  <p>Telehealth consultation fees are displayed upfront prior to booking. Payments are processed securely via external sandbox integrations (Stripe and Razorpay). Cancellation and refund requests must be initiated through the Patient Dashboard transaction logs and are subject to the consulting doctor's notice policy.</p>
+                </>
+              )}
+
+              {legalSubTab === 'privacy' && (
+                <>
+                  <p><strong>Last Updated: June 15, 2026</strong></p>
+                  <p>At MedConnect, we prioritize data privacy and confidentiality. This Privacy Policy details how we collect, handle, encrypt, and share your personal and protected medical history.</p>
+                  
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>1. Data Collection Categories</h4>
+                  <p>We process information required for patient triaging and care delivery, including:</p>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13.5px' }}>
+                    <li><strong>Registration Info:</strong> Full name, age, email, and phone number.</li>
+                    <li><strong>EHR Data:</strong> Blood group, history of surgeries, known allergies, chronic diseases, and vaccination logs.</li>
+                    <li><strong>Clinical Records:</strong> Diagnostic SOAP notes, e-prescriptions, and order details.</li>
+                  </ul>
+                  
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>2. Consultations & Telemetry Encryption</h4>
+                  <p>Live virtual consultation rooms operate via end-to-end encrypted WebRTC streams. Video and audio signals are transmitted directly between patient and doctor browsers. No recording of audio, video, or screen sharing is performed by the MedConnect platform or stored on our servers.</p>
+
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>3. Secure Pharmacy Fulfillments</h4>
+                  <p>To maintain absolute safety, e-prescription details are stored in an encrypted state in the database. Pharmacists can only decrypt and view patient prescriptions upon receiving the unique 6-character Handover Verification Code (Legit Code) shared directly by the patient.</p>
+
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>4. User Rights & Inquiries</h4>
+                  <p>You retain the right to download your EHR profiles, request updates to medical records, or query active login sessions. For data protection inquiries or to request permanent account deletion, contact our privacy officer at <a href="mailto:medconnect@gmail.com">medconnect@gmail.com</a>.</p>
+                </>
+              )}
+
+              {legalSubTab === 'hipaa' && (
+                <>
+                  <p><strong>Last Updated: June 15, 2026</strong></p>
+                  <p>MedConnect is a student demonstration project designed with HIPAA-inspired security principles. It illustrates layout representations of the administrative, technical, and physical safeguards under the Health Insurance Portability and Accountability Act (HIPAA) to protect Protected Health Information (PHI) in educational contexts.</p>
+                  
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>1. Technical Safeguards & Encryption</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13.5px' }}>
+                    <li><strong>Encryption in Transit:</strong> All data transmitted between browsers and the clinical API is secured using TLS 1.3 protocol.</li>
+                    <li><strong>Encryption at Rest:</strong> Electronic Health Records (EHR) and prescription fields are encrypted using advanced AES-256 standards in database storage.</li>
+                    <li><strong>2FA Integration:</strong> Role-based accounts can enable authenticator-based Two-Factor Authentication (2FA) in Settings.</li>
+                  </ul>
+
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>2. Role-Based Access Controls (RBAC)</h4>
+                  <p>Strict access levels ensure that only the patient and their consulting provider can access specific clinical logs. Pharmacists have zero access to the patient's wider medical records and can only view specific prescriptions via the Handover legit code decryption channel.</p>
+
+                  <h4 style={{ color: 'var(--ink)', margin: '10px 0 5px 0', fontSize: '15px', fontWeight: 'bold' }}>3. Audit & Session Controls</h4>
+                  <p>System administrators monitor active login sessions across all accounts and can force logout anomalous or stale browser sessions. The system logs all critical activities (user login, prescription creation, provider approvals) to prevent unauthorized PHI disclosures.</p>
+                </>
+              )}
+            </div>
+
+            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn-ghost" onClick={() => setPolicyTab(null)} style={{ padding: '8px 20px', fontSize: '14px' }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ROLES */}
       <section className="section" id="roles">
@@ -1084,96 +1224,16 @@ const LandingPage = () => {
       {/* FOOTER */}
       <footer>
         <div className="footer-inner">
-          <div className="footer-logo">MediLink</div>
+          <div className="footer-logo">MedConnect</div>
           <div className="footer-links">
-            <a href="#" onClick={(e) => { e.preventDefault(); setPolicyTab('privacy'); }}>{t.privacyPolicy}</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); setPolicyTab('terms'); }}>{t.termsOfService}</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); setPolicyTab('hipaa'); }}>{t.hipaaCompliance}</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setPolicyTab('legal'); setLegalSubTab('terms'); }}>{t.termsAndPolicies}</a>
             <a href="#" onClick={(e) => { e.preventDefault(); toast.success(t.systemStatusToast); }}>{t.systemStatus}</a>
           </div>
           <div style={{ fontSize: '13px', color: 'var(--ink-muted)' }}>{t.copyright}</div>
         </div>
       </footer>
 
-      {/* Policy Modal Overlay */}
-      {policyTab && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(11,18,32,0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000 }}>
-          <div className="glass-card" style={{ padding: '2.5rem', width: '90%', maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto', background: 'var(--white)', border: '1px solid var(--border)', textAlign: 'left' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
-              <h3 className="serif-text" style={{ fontSize: '1.8rem', margin: 0, color: 'var(--ink)' }}>
-                {policyTab === 'privacy' && 'Privacy Policy'}
-                {policyTab === 'terms' && 'Terms of Service'}
-                {policyTab === 'hipaa' && 'HIPAA Compliance'}
-              </h3>
-              <button onClick={() => setPolicyTab(null)} style={{ background: 'transparent', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer', fontSize: '1.5rem' }}>✕</button>
-            </div>
 
-            <div style={{ color: 'var(--ink-soft)', fontSize: '0.95rem', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              {policyTab === 'terms' && (
-                <>
-                  <p>Welcome to MediLink. By using our platform, you agree to these Terms of Service. Please review our operating guidelines below:</p>
-                  
-                  <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid #22c55e' }}>
-                    <h4 style={{ color: '#15803d', margin: '0 0 6px 0', fontSize: '14px', fontWeight: 'bold' }}>✅ WHAT TO DO (Best Practices)</h4>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px' }}>
-                      <li>Provide genuine and accurate age, name, and contact details during registration.</li>
-                      <li>Upload only valid medical records, blood reports, or prescription histories.</li>
-                      <li>Maintain professional conduct with all consulting medical practitioners.</li>
-                      <li>Use secure, private devices when engaging in live video room consultations.</li>
-                    </ul>
-                  </div>
-
-                  <div style={{ background: '#fef2f2', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid #ef4444' }}>
-                    <h4 style={{ color: '#b91c1c', margin: '0 0 6px 0', fontSize: '14px', fontWeight: 'bold' }}>❌ WHAT NOT TO DO (Prohibited Actions)</h4>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px' }}>
-                      <li>Do not upload fake clinical certificates, license numbers, or fabricated medical documents.</li>
-                      <li>Do not use the platform for immediate life-threatening medical emergencies (contact emergency services directly).</li>
-                      <li>Do not share login credentials or attempt to access other user dashboards.</li>
-                      <li>Do not engage in harassment or recording of virtual consultation sessions without explicit consent.</li>
-                    </ul>
-                  </div>
-                </>
-              )}
-
-              {policyTab === 'privacy' && (
-                <>
-                  <p>Your privacy is our utmost priority. MediLink implements industry-standard protocols to secure your data.</p>
-                  <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid #22c55e' }}>
-                    <h4 style={{ color: '#15803d', margin: '0 0 6px 0', fontSize: '14px', fontWeight: 'bold' }}>✅ WHAT TO DO</h4>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px' }}>
-                      <li>Ensure your registered email address and mobile number are kept up to date for secure recovery.</li>
-                      <li>Enable camera and microphone permissions solely within our official consultation room.</li>
-                      <li>Review the credentials and ratings of providers before booking sessions.</li>
-                    </ul>
-                  </div>
-                  <div style={{ background: '#fef2f2', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid #ef4444' }}>
-                    <h4 style={{ color: '#b91c1c', margin: '0 0 6px 0', fontSize: '14px', fontWeight: 'bold' }}>❌ WHAT NOT TO DO</h4>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px' }}>
-                      <li>Do not store or share sensitive personal medical data in unencrypted chat messages.</li>
-                      <li>Do not allow unauthorized individuals to view your dashboard or live call screens.</li>
-                    </ul>
-                  </div>
-                </>
-              )}
-
-              {policyTab === 'hipaa' && (
-                <>
-                  <p>MediLink is designed to align with the Health Insurance Portability and Accountability Act (HIPAA) requirements:</p>
-                  <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '13px' }}>
-                    <li><strong>Protected Health Information (PHI):</strong> All patient records, blood reports, and e-prescriptions are encrypted at rest and in transit.</li>
-                    <li><strong>Consultation Security:</strong> Video and audio streams utilize secure Peer-to-peer protocols with fallback relays.</li>
-                    <li><strong>Access Control:</strong> Administrative controls enforce role-based authorization to prevent unauthorized disclosure.</li>
-                  </ul>
-                </>
-              )}
-            </div>
-
-            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-              <button className="btn-ghost" onClick={() => setPolicyTab(null)} style={{ padding: '8px 20px', fontSize: '14px' }}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* AI GUIDE CHAT WIDGET */}
       <div className="ai-guide-container">
@@ -1181,7 +1241,7 @@ const LandingPage = () => {
           <button 
             className="ai-guide-bubble" 
             onClick={() => setIsChatOpen(true)}
-            title="Open MediLink AI Guide"
+            title="Open MedConnect AI Guide"
           >
             💬
           </button>
@@ -1190,7 +1250,7 @@ const LandingPage = () => {
             <div className="ai-guide-header">
               <div className="ai-guide-header-avatar">🤖</div>
               <div className="ai-guide-header-info">
-                <div className="ai-guide-header-title">MediLink Guide AI</div>
+                <div className="ai-guide-header-title">MedConnect Guide AI</div>
                 <div className="ai-guide-header-status">Online Guide</div>
               </div>
               <button 
@@ -1226,7 +1286,7 @@ const LandingPage = () => {
                   className={`ai-message ${msg.sender}`}
                   style={{ whiteSpace: 'pre-line' }}
                 >
-                  {msg.text}
+                  {msg.id === 1 ? t.aiWelcome : msg.text}
                 </div>
               ))}
               <div ref={messagesEndRef} />
@@ -1253,7 +1313,7 @@ const LandingPage = () => {
               </button>
               <button 
                 className="ai-suggestion-chip" 
-                onClick={() => handleSendMessage("Is MediLink HIPAA compliant?")}
+                onClick={() => handleSendMessage("Is MedConnect HIPAA compliant?")}
               >
                 {t.aiChipSecurity}
               </button>

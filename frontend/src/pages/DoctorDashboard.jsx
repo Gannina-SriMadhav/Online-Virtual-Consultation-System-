@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getDoctorConsultations, issuePrescription, addMedicalRecord, getAllUsers, cancelAppointment, updateUserProfile } from '../api';
+import { getDoctorConsultations, issuePrescription, addMedicalRecord, getAllUsers, cancelAppointment, updateUserProfile, updateAppointment } from '../api';
 import toast from 'react-hot-toast';
 import VideoConsultation from '../components/VideoConsultation';
+import { addNotification, notifyPrescriptionIssued, notifyAppointmentCancelled } from '../utils/notifications';
+import CalendarView from '../components/CalendarView';
+import NotificationCenter from '../components/NotificationCenter';
+import { DEFAULT_AVAILABILITY } from '../utils/availability';
 import { Video, Calendar, XCircle, LogOut, FilePlus, Zap } from 'lucide-react';
 
 const TRANSLATIONS = {
@@ -59,7 +63,27 @@ const TRANSLATIONS = {
     recordFailed: "Failed to add medical record.",
     apptCanceled: "Appointment Canceled!",
     errCanceled: "Error canceling appointment.",
-    failedCancelAction: "Failed to execute cancel action."
+    failedCancelAction: "Failed to execute cancel action.",
+    enable2fa: "🔒 Enable Two-Factor Authentication (2FA)",
+    scan2faQr: "Scan QR with Authenticator App (Google/Microsoft):",
+    secretKey: "Secret Key:",
+    availabilityScheduler: "Availability Scheduler",
+    weeklyWorkingShifts: "Weekly Working Shifts",
+    shift1: "Shift 1:",
+    shift2: "Shift 2:",
+    to: "to",
+    dailyBreaks: "Daily Breaks",
+    standardBreak: "Standard Break:",
+    vacationLeaveExceptions: "Vacation & Leave Exceptions",
+    vacationDaysPlaceholder: "Vacation Days (Comma-separated, e.g. 2026-06-25, 2026-06-26)",
+    emergencyLeavesPlaceholder: "Emergency Leaves (Comma-separated, e.g. 2026-07-01)",
+    monday: "Monday",
+    tuesday: "Tuesday",
+    wednesday: "Wednesday",
+    thursday: "Thursday",
+    friday: "Friday",
+    saturday: "Saturday",
+    sunday: "Sunday"
   },
   hi: {
     welcome: "स्वागत है",
@@ -115,7 +139,27 @@ const TRANSLATIONS = {
     recordFailed: "चिकित्सा रिकॉर्ड जोड़ने में विफल।",
     apptCanceled: "अपॉइंटमेंट रद्द कर दिया गया!",
     errCanceled: "अपॉइंटमेंट रद्द करने में त्रुटि।",
-    failedCancelAction: "रद्द करने की कार्रवाई निष्पादित करने में विफल।"
+    failedCancelAction: "रद्द करने की कार्रवाई निष्पादित करने में विफल।",
+    enable2fa: "🔒 द्वि-कारक प्रमाणीकरण (2FA) सक्षम करें",
+    scan2faQr: "प्रमाणीकरण ऐप (Google/Microsoft) से क्यूआर स्कैन करें:",
+    secretKey: "गुप्त कुंजी (Secret Key):",
+    availabilityScheduler: "उपलब्धता अनुसूचक (Availability Scheduler)",
+    weeklyWorkingShifts: "साप्ताहिक कार्य पाली (Weekly Working Shifts)",
+    shift1: "पाली 1 (Shift 1):",
+    shift2: "पाली 2 (Shift 2):",
+    to: "से",
+    dailyBreaks: "दैनिक ब्रेक",
+    standardBreak: "मानक ब्रेक (Standard Break):",
+    vacationLeaveExceptions: "अवकाश और छुट्टी अपवाद",
+    vacationDaysPlaceholder: "अवकाश के दिन (अल्पविराम से अलग, जैसे 2026-06-25, 2026-06-26)",
+    emergencyLeavesPlaceholder: "आपातकालीन पत्तियां (अल्पविराम से अलग, जैसे 2026-07-01)",
+    monday: "सोमवार",
+    tuesday: "मंगलवार",
+    wednesday: "बुधवार",
+    thursday: "गुरुवार",
+    friday: "शुक्रवार",
+    saturday: "शनिवार",
+    sunday: "रविवार"
   },
   te: {
     welcome: "స్వాగతం",
@@ -171,7 +215,27 @@ const TRANSLATIONS = {
     recordFailed: "వైద్య రికార్డును జోడించడంలో విఫలమైంది.",
     apptCanceled: "అపాయింట్‌మెంట్ రద్దు చేయబడింది!",
     errCanceled: "అపాయింట్‌మెంట్‌ను రద్దు చేయడంలో లోపం సంభవించింది.",
-    failedCancelAction: "రద్దు చర్యను అమలు చేయడంలో విఫలమైంది."
+    failedCancelAction: "రద్దు చర్యను అమలు చేయడంలో విఫలమైంది.",
+    enable2fa: "🔒 ద్వి-కారక ప్రామాణీకరణ (2FA) ప్రారంభించు",
+    scan2faQr: "అథెంటికేటర్ యాప్ (Google/Microsoft) తో క్యూఆర్ కోడ్ స్కాన్ చేయండి:",
+    secretKey: "రహస్య కీ (Secret Key):",
+    availabilityScheduler: "అందుబాటు సమయ నిర్వాహణ (Availability Scheduler)",
+    weeklyWorkingShifts: "వారపు షిఫ్ట్‌లు (Weekly Working Shifts)",
+    shift1: "షిఫ్ట్ 1:",
+    shift2: "షిఫ్ట్ 2:",
+    to: "నుండి",
+    dailyBreaks: "రోజువారీ విరామాలు (Daily Breaks)",
+    standardBreak: "ప్రామాణిక విరామం (Standard Break):",
+    vacationLeaveExceptions: "సెలవుల మినహాయింపులు",
+    vacationDaysPlaceholder: "సెలవు రోజులు (కామాలతో వేరు చేయండి, ఉదా. 2026-06-25, 2026-06-26)",
+    emergencyLeavesPlaceholder: "అత్యవసర సెలవులు (కామాలతో వేరు చేయండి, ఉదా. 2026-07-01)",
+    monday: "సోమవారం",
+    tuesday: "మంగళవారం",
+    wednesday: "బుధవారం",
+    thursday: "గురువారం",
+    friday: "శుక్రవారం",
+    saturday: "శనివారం",
+    sunday: "ఆదివారం"
   }
 };
 
@@ -201,6 +265,10 @@ const DoctorDashboard = () => {
   const [rating, setRating] = useState(5.0);
   const [patients, setPatients] = useState([]);
 
+  const [viewMode, setViewMode] = useState('list');
+  const [settingsTab, setSettingsTab] = useState('profile');
+  const [availabilityScheduler, setAvailabilityScheduler] = useState(DEFAULT_AVAILABILITY);
+
   // Settings Panel State
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isEditingSettings, setIsEditingSettings] = useState(false);
@@ -211,6 +279,7 @@ const DoctorDashboard = () => {
     phoneNumber: '',
     password: '',
     confirmPassword: '',
+    twoFactorEnabled: false,
     specialist: '',
     licenseNumber: ''
   });
@@ -230,16 +299,6 @@ const DoctorDashboard = () => {
   useEffect(() => {
     showSettingsModalRef.current = showSettingsModal;
   }, [showSettingsModal]);
-
-  useEffect(() => {
-    loadAppointments();
-    const interval = setInterval(() => {
-      if (!showSettingsModalRef.current) {
-        loadAppointments();
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const loadAppointments = async () => {
     const users = await getAllUsers();
@@ -261,6 +320,18 @@ const DoctorDashboard = () => {
     setPatients((users || []).filter(u => u.role === 'PATIENT'));
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      loadAppointments();
+    }, 0);
+    const interval = setInterval(() => {
+      if (!showSettingsModalRef.current) {
+        loadAppointments();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   const triggerConfirm = (title, message, confirmText, onConfirmAction) => {
     setConfirmModal({
       show: true,
@@ -272,6 +343,43 @@ const DoctorDashboard = () => {
         setConfirmModal(prev => ({ ...prev, show: false }));
       }
     });
+  };
+
+  const updateWeeklyShift = (day, shiftIdx, field, value) => {
+    const newWeekly = { ...availabilityScheduler.weekly };
+    const dayShifts = [...(newWeekly[day] || [])];
+    if (!dayShifts[shiftIdx]) {
+      dayShifts[shiftIdx] = { start: '09:00', end: '13:00' };
+    }
+    dayShifts[shiftIdx] = { ...dayShifts[shiftIdx], [field]: value };
+    newWeekly[day] = dayShifts;
+    setAvailabilityScheduler({ ...availabilityScheduler, weekly: newWeekly });
+  };
+
+  const toggleDayAvailability = (day, checked) => {
+    const newWeekly = { ...availabilityScheduler.weekly };
+    if (checked) {
+      newWeekly[day] = [{ start: '09:00', end: '13:00' }, { start: '14:00', end: '18:00' }];
+    } else {
+      newWeekly[day] = [];
+    }
+    setAvailabilityScheduler({ ...availabilityScheduler, weekly: newWeekly });
+  };
+
+  const updateBreak = (field, value) => {
+    const newBreaks = [...(availabilityScheduler.breaks || [{ start: '13:00', end: '14:00' }])];
+    newBreaks[0] = { ...newBreaks[0], [field]: value };
+    setAvailabilityScheduler({ ...availabilityScheduler, breaks: newBreaks });
+  };
+
+  const handleVacationsChange = (val) => {
+    const list = val.split(',').map(s => s.trim()).filter(Boolean);
+    setAvailabilityScheduler({ ...availabilityScheduler, vacations: list });
+  };
+
+  const handleLeavesChange = (val) => {
+    const list = val.split(',').map(s => s.trim()).filter(Boolean);
+    setAvailabilityScheduler({ ...availabilityScheduler, leaves: list });
   };
 
   const handleOpenSettings = async () => {
@@ -287,15 +395,27 @@ const DoctorDashboard = () => {
           phoneNumber: me.phoneNumber || '',
           password: '',
           confirmPassword: '',
+          twoFactorEnabled: me.twoFactorEnabled || false,
           specialist: me.specialist || '',
           licenseNumber: me.licenseNumber || ''
         });
+        let avail = DEFAULT_AVAILABILITY;
+        if (me.availabilityConfig) {
+          try {
+            avail = JSON.parse(me.availabilityConfig);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        setAvailabilityScheduler(avail);
+        setSettingsTab('profile');
         setShowPassword(false);
         setShowConfirmPassword(false);
         setIsEditingSettings(false);
         setShowSettingsModal(true);
       }
     } catch (err) {
+      console.error(err);
       toast.error(t.loadDetailsFailed);
     }
   };
@@ -316,8 +436,10 @@ const DoctorDashboard = () => {
         age: settingsData.age ? parseInt(settingsData.age) : null,
         phoneNumber: settingsData.phoneNumber,
         password: settingsData.password || null,
+        twoFactorEnabled: settingsData.twoFactorEnabled,
         specialist: settingsData.specialist || null,
-        licenseNumber: settingsData.licenseNumber || null
+        licenseNumber: settingsData.licenseNumber || null,
+        availabilityConfig: JSON.stringify(availabilityScheduler)
       };
       const updated = await updateUserProfile(doctorId, payload);
       toast.success(t.profileUpdated);
@@ -326,11 +448,21 @@ const DoctorDashboard = () => {
       setShowSettingsModal(false);
       setIsEditingSettings(false);
     } catch (err) {
+      console.error(err);
       toast.error(t.profileUpdateFailed);
     }
   };
 
-  const startCall = (apptId, patientId) => {
+  const startCall = async (apptId, patientId) => {
+    try {
+      const appt = appointments.find(a => a.id === apptId);
+      if (appt && appt.status === 'Checked-In') {
+        await updateAppointment(apptId, { ...appt, status: 'In Consultation' });
+        toast.success("Patient admitted to consultation!");
+      }
+    } catch (err) {
+      console.error("Admit patient error:", err);
+    }
     setActivePatient(apptId);
     setActivePatientId(patientId);
     setInCall(true);
@@ -339,7 +471,11 @@ const DoctorDashboard = () => {
   const handlePrescriptionSubmit = async (e) => {
     e.preventDefault();
     try {
-      await issuePrescription({
+      const appt = appointments.find(a => a.id === rxData.appointmentId);
+      const patientEmail = appt?.patient?.email || '';
+      const patientPhone = appt?.patient?.phoneNumber || '';
+
+      const res = await issuePrescription({
         appointment: { id: rxData.appointmentId },
         medicationDetails: rxData.medicationDetails,
         instructions: rxData.instructions,
@@ -348,7 +484,15 @@ const DoctorDashboard = () => {
       toast.success(t.prescriptionSuccess);
       setShowPrescriptionModal(false);
       setRxData({ appointmentId: '', medicationDetails: '', instructions: '' });
-    } catch (err) { toast.error(t.prescriptionFailed); }
+
+      if (res && res.verificationCode) {
+        notifyPrescriptionIssued(patientEmail, patientPhone, doctorName, res.verificationCode);
+        addNotification("Prescription Ready", `Your digital prescription from Dr. ${doctorName} is ready. Verification code: ${res.verificationCode}`, "success");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(t.prescriptionFailed);
+    }
   };
 
   const handleRecordSubmit = async (e) => {
@@ -364,7 +508,24 @@ const DoctorDashboard = () => {
       toast.success(t.recordSuccess);
       setShowRecordModal(false);
       setRecordData({ patientId: '', diagnosis: '', treatmentPlan: '' });
-    } catch (err) { toast.error(t.recordFailed); }
+    } catch (err) {
+      console.error(err);
+      toast.error(t.recordFailed);
+    }
+  };
+
+  const handleNoShow = async (id) => {
+    try {
+      const appt = appointments.find(a => a.id === id);
+      if (appt) {
+        await updateAppointment(id, { ...appt, status: 'No Show' });
+        toast.success("Patient marked as No Show.");
+        loadAppointments();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to mark patient as No Show.");
+    }
   };
 
   const handleCancel = (id) => {
@@ -374,14 +535,22 @@ const DoctorDashboard = () => {
       t.cancelApptBtn,
       async () => {
         try {
+          const appt = appointments.find(a => a.id === id);
+          const patientEmail = appt?.patient?.email || '';
+          const apptDate = appt?.appointmentDate ? new Date(appt.appointmentDate).toLocaleString() : '';
+
           const ok = await cancelAppointment(id);
           if(ok) {
              toast.success(t.apptCanceled);
+             notifyAppointmentCancelled(patientEmail, apptDate, doctorName);
              loadAppointments();
           } else {
              toast.error(t.errCanceled);
           }
-        } catch (err) { toast.error(t.failedCancelAction); }
+        } catch (err) {
+          console.error(err);
+          toast.error(t.failedCancelAction);
+        }
       }
     );
   };
@@ -404,7 +573,6 @@ const DoctorDashboard = () => {
 
   // Calculate live statistics
   const pendingConsultationsCount = appointments.filter(a => a.status !== 'COMPLETED').length;
-  const completedConsultationsCount = appointments.filter(a => a.status === 'COMPLETED').length;
   const uniquePatientsCount = new Set(appointments.map(a => a.patient?.id)).size;
 
   return (
@@ -430,6 +598,7 @@ const DoctorDashboard = () => {
             </div>
             {/* Settings & Logout Buttons inside the card flex layout */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <NotificationCenter />
               <select 
                 value={currentLang} 
                 onChange={(e) => handleLangChange(e.target.value)} 
@@ -480,40 +649,102 @@ const DoctorDashboard = () => {
           
           {/* Scheduled Consultations - Left Column (Styled like mockup Today's Consultations) */}
           <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--white)', height: 'fit-content' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--ink-muted)', letterSpacing: '0.7px', margin: 0 }}>
-                {t.todaysConsultations}
-              </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <h3 style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--ink-muted)', letterSpacing: '0.7px', margin: 0 }}>
+                  {t.todaysConsultations}
+                </h3>
+                {/* View switcher buttons */}
+                <div style={{ display: 'flex', background: 'var(--surface)', borderRadius: '20px', padding: '2px', border: '1px solid var(--border)' }}>
+                  <button 
+                    onClick={() => setViewMode('list')} 
+                    style={{ 
+                      padding: '4px 10px', 
+                      fontSize: '11px', 
+                      borderRadius: '18px', 
+                      border: 'none', 
+                      cursor: 'pointer', 
+                      fontWeight: '600',
+                      background: viewMode === 'list' ? 'var(--sky-pale)' : 'transparent',
+                      color: viewMode === 'list' ? 'var(--sky-dark)' : 'var(--ink-soft)' 
+                    }}
+                  >
+                    List
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('calendar')} 
+                    style={{ 
+                      padding: '4px 10px', 
+                      fontSize: '11px', 
+                      borderRadius: '18px', 
+                      border: 'none', 
+                      cursor: 'pointer', 
+                      fontWeight: '600',
+                      background: viewMode === 'calendar' ? 'var(--sky-pale)' : 'transparent',
+                      color: viewMode === 'calendar' ? 'var(--sky-dark)' : 'var(--ink-soft)' 
+                    }}
+                  >
+                    Calendar
+                  </button>
+                </div>
+              </div>
               <span style={{ background: 'var(--sky-pale)', color: 'var(--sky-dark)', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' }}>
                 {t.hdVideoCall}
               </span>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {appointments.filter(a => a.status !== 'COMPLETED').length === 0 ? (
-                <p style={{ color: 'var(--ink-muted)', textAlign: 'center', padding: '2rem' }}>{t.noLiveAppts}</p>
-              ) : appointments.filter(a => a.status !== 'COMPLETED').map((appt) => (
-                  <div key={appt.id} style={{ background: 'var(--surface)', padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                       <div style={{ fontSize: '24px' }}>🎥</div>
-                       <div>
-                         <h4 style={{ fontSize: '1.1rem', color: 'var(--ink)', fontWeight: '600', margin: 0 }}>{appt.patient?.name || 'Unknown Patient'}</h4>
-                         <p style={{ color: 'var(--ink-soft)', fontSize: '13px', marginTop: '4px' }}>
-                           {new Date(appt.appointmentDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} — Video Consultation
-                         </p>
-                       </div>
+            {viewMode === 'calendar' ? (
+              <CalendarView 
+                appointments={appointments.filter(a => a.status !== 'COMPLETED')} 
+                onSelectAppointment={(appt) => {
+                  if (appt.status !== 'CANCELLED') {
+                    startCall(appt.id, appt.patient?.id);
+                  }
+                }} 
+                isDoctor={true} 
+              />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {appointments.filter(a => a.status !== 'COMPLETED').length === 0 ? (
+                  <p style={{ color: 'var(--ink-muted)', textAlign: 'center', padding: '2rem' }}>{t.noLiveAppts}</p>
+                ) : appointments.filter(a => a.status !== 'COMPLETED').map((appt) => (
+                    <div key={appt.id} style={{ background: 'var(--surface)', padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                         <div style={{ fontSize: '24px' }}>🎥</div>
+                         <div>
+                           <h4 style={{ fontSize: '1.1rem', color: 'var(--ink)', fontWeight: '600', margin: 0 }}>{appt.patient?.name || 'Unknown Patient'}</h4>
+                           <p style={{ color: 'var(--ink-soft)', fontSize: '13px', marginTop: '4px' }}>
+                             {new Date(appt.appointmentDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} — Video Consultation
+                           </p>
+                         </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                         {appt.status === 'Checked-In' && (
+                            <span style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', background: 'var(--mint-pale)', color: 'var(--mint)', fontWeight: 'bold', animation: 'pulse 2s infinite' }}>
+                              Checked-In (In Waiting Room)
+                            </span>
+                         )}
+                         {appt.status === 'No Show' && (
+                            <span style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold' }}>
+                              No Show
+                            </span>
+                         )}
+                         <button className="glow-button" onClick={() => startCall(appt.id, appt.patient?.id)} style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                           {appt.status === 'Checked-In' ? '🚪 Admit Patient' : t.liveNow}
+                         </button>
+                         {appt.status !== 'No Show' && (
+                            <button onClick={() => handleNoShow(appt.id)} style={{ background: 'rgba(245, 158, 11, 0.08)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '6px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }} title="Mark as No Show">
+                              No Show
+                            </button>
+                         )}
+                         <button onClick={() => handleCancel(appt.id)} style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title={t.cancelApptBtn}>
+                           <XCircle size={18} />
+                         </button>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                       <button className="glow-button pulse-button" onClick={() => startCall(appt.id, appt.patient?.id)} style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                         {t.liveNow}
-                       </button>
-                       <button onClick={() => handleCancel(appt.id)} style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title={t.cancelApptBtn}>
-                         <XCircle size={18} />
-                       </button>
-                    </div>
-                  </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
           
           {/* Quick Actions Panel - Right Column */}
@@ -632,81 +863,246 @@ const DoctorDashboard = () => {
             
             <form onSubmit={e => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.fullNameInput}</label>
-                <input type="text" required disabled={!isEditingSettings} value={settingsData.name} onChange={e => setSettingsData({...settingsData, name: e.target.value})} style={{ width: '100%' }} />
+              {/* Tab Selector */}
+              <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem', paddingBottom: '0.5rem' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setSettingsTab('profile')} 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: settingsTab === 'profile' ? '2px solid var(--mint)' : 'none',
+                    padding: '0.5rem 1rem',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: settingsTab === 'profile' ? 'var(--mint)' : 'var(--ink-soft)',
+                    outline: 'none'
+                  }}
+                >
+                  Profile Details
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setSettingsTab('availability')} 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: settingsTab === 'availability' ? '2px solid var(--mint)' : 'none',
+                    padding: '0.5rem 1rem',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    color: settingsTab === 'availability' ? 'var(--mint)' : 'var(--ink-soft)',
+                    outline: 'none'
+                  }}
+                >
+                  {t.availabilityScheduler}
+                </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.emailInput}</label>
-                <input type="email" required disabled={!isEditingSettings} value={settingsData.email} onChange={e => setSettingsData({...settingsData, email: e.target.value})} style={{ width: '100%' }} />
-              </div>
+              {settingsTab === 'profile' && (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.fullNameInput}</label>
+                    <input type="text" required disabled={!isEditingSettings} value={settingsData.name} onChange={e => setSettingsData({...settingsData, name: e.target.value})} style={{ width: '100%' }} />
+                  </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.ageInput}</label>
-                <input type="number" required disabled={!isEditingSettings} value={settingsData.age} onChange={e => setSettingsData({...settingsData, age: e.target.value})} style={{ width: '100%' }} />
-              </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.emailInput}</label>
+                    <input type="email" required disabled={!isEditingSettings} value={settingsData.email} onChange={e => setSettingsData({...settingsData, email: e.target.value})} style={{ width: '100%' }} />
+                  </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.phoneInput}</label>
-                <input type="text" disabled={!isEditingSettings} value={settingsData.phoneNumber} onChange={e => setSettingsData({...settingsData, phoneNumber: e.target.value})} style={{ width: '100%' }} placeholder={t.phoneInput} />
-              </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.ageInput}</label>
+                    <input type="number" required disabled={!isEditingSettings} value={settingsData.age} onChange={e => setSettingsData({...settingsData, age: e.target.value})} style={{ width: '100%' }} />
+                  </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.licenseNumber}</label>
-                <input type="text" required disabled value={settingsData.licenseNumber} style={{ width: '100%', background: 'var(--surface)', cursor: 'not-allowed' }} />
-              </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.phoneInput}</label>
+                    <input type="text" disabled={!isEditingSettings} value={settingsData.phoneNumber} onChange={e => setSettingsData({...settingsData, phoneNumber: e.target.value})} style={{ width: '100%' }} placeholder={t.phoneInput} />
+                  </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.specialty}</label>
-                <input type="text" required disabled value={settingsData.specialist} style={{ width: '100%', background: 'var(--surface)', cursor: 'not-allowed' }} />
-              </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.licenseNumber}</label>
+                    <input type="text" required disabled value={settingsData.licenseNumber} style={{ width: '100%', background: 'var(--surface)', cursor: 'not-allowed' }} />
+                  </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', position: 'relative' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.passwordInput} {isEditingSettings && t.passwordInputHint}</label>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <input 
-                     type={showPassword ? "text" : "password"} 
-                    disabled={!isEditingSettings} 
-                    value={settingsData.password} 
-                    onChange={e => setSettingsData({...settingsData, password: e.target.value})} 
-                    placeholder={isEditingSettings ? t.passwordInput : "••••••••"} 
-                    style={{ width: '100%', paddingRight: '45px' }} 
-                  />
-                  {isEditingSettings && (
-                    <button 
-                      type="button" 
-                      onClick={() => setShowPassword(!showPassword)} 
-                      style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', color: 'var(--ink-muted)', outline: 'none' }}
-                    >
-                      {showPassword ? '👁️' : '👁️‍🗨️'}
-                    </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.specialty}</label>
+                    <input type="text" required disabled value={settingsData.specialist} style={{ width: '100%', background: 'var(--surface)', cursor: 'not-allowed' }} />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', position: 'relative' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.passwordInput} {isEditingSettings && t.passwordInputHint}</label>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input 
+                        type={showPassword ? "text" : "password"} 
+                        disabled={!isEditingSettings} 
+                        value={settingsData.password} 
+                        onChange={e => setSettingsData({...settingsData, password: e.target.value})} 
+                        placeholder={isEditingSettings ? t.passwordInput : "••••••••"} 
+                        style={{ width: '100%', paddingRight: '45px' }} 
+                      />
+                      {isEditingSettings && (
+                        <button 
+                          type="button" 
+                          onClick={() => setShowPassword(!showPassword)} 
+                          style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', color: 'var(--ink-muted)', outline: 'none' }}
+                        >
+                          {showPassword ? '👁️' : '👁️‍🗨️'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', position: 'relative' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.confirmPasswordInput}</label>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input 
+                        type={showConfirmPassword ? "text" : "password"} 
+                        disabled={!isEditingSettings} 
+                        value={settingsData.confirmPassword || ''} 
+                        onChange={e => setSettingsData({...settingsData, confirmPassword: e.target.value})} 
+                        placeholder={isEditingSettings ? t.confirmPasswordInput : "••••••••"} 
+                        style={{ width: '100%', paddingRight: '45px' }} 
+                      />
+                      {isEditingSettings && (
+                        <button 
+                          type="button" 
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                          style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', color: 'var(--ink-muted)', outline: 'none' }}
+                        >
+                          {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Two-Factor Authentication (2FA) Toggle */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                    <input 
+                      type="checkbox" 
+                      disabled={!isEditingSettings}
+                      checked={settingsData.twoFactorEnabled || false}
+                      onChange={e => setSettingsData({...settingsData, twoFactorEnabled: e.target.checked})}
+                      id="toggle-doctor-2fa"
+                    />
+                    <label htmlFor="toggle-doctor-2fa" style={{ fontWeight: '600', color: 'var(--ink)', cursor: 'pointer', fontSize: '13px' }}>
+                      {t.enable2fa}
+                    </label>
+                  </div>
+                  {settingsData.twoFactorEnabled && (
+                    <div style={{ marginTop: '15px', padding: '12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--ink-soft)', fontWeight: '600', textAlign: 'center' }}>{t.scan2faQr}</span>
+                      <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=otpauth://totp/MedConnect:${settingsData.email}?secret=MC2FADOCTORSECRET&issuer=MedConnect`} alt="2FA QR Code" width="140" height="140" />
+                      <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--ink-muted)' }}>{t.secretKey} MC-2FA-DOCTOR-KEY</span>
+                    </div>
                   )}
-                </div>
-              </div>
+                </>
+              )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', position: 'relative' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.confirmPasswordInput}</label>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <input 
-                     type={showConfirmPassword ? "text" : "password"} 
-                    disabled={!isEditingSettings} 
-                    value={settingsData.confirmPassword || ''} 
-                    onChange={e => setSettingsData({...settingsData, confirmPassword: e.target.value})} 
-                    placeholder={isEditingSettings ? t.confirmPasswordInput : "••••••••"} 
-                    style={{ width: '100%', paddingRight: '45px' }} 
-                  />
-                  {isEditingSettings && (
-                    <button 
-                      type="button" 
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
-                      style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', color: 'var(--ink-muted)', outline: 'none' }}
-                    >
-                      {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                    </button>
-                  )}
+              {settingsTab === 'availability' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--ink)', marginBottom: '0.5rem' }}>{t.weeklyWorkingShifts}</h3>
+                  {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => {
+                    const shifts = availabilityScheduler.weekly?.[day] || [];
+                    const isAvailable = shifts.length > 0;
+                    return (
+                      <div key={day} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px', background: 'var(--surface)', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <input 
+                            type="checkbox" 
+                            disabled={!isEditingSettings}
+                            checked={isAvailable}
+                            onChange={e => toggleDayAvailability(day, e.target.checked)}
+                            id={`avail-${day}`}
+                          />
+                          <label htmlFor={`avail-${day}`} style={{ textTransform: 'capitalize', fontWeight: '600', color: 'var(--ink)' }}>{t[day] || day}</label>
+                        </div>
+                        {isAvailable && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginLeft: '24px' }}>
+                            {/* Shift 1 */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{ fontSize: '12px', color: 'var(--ink-soft)', minWidth: '50px' }}>{t.shift1}</span>
+                              <input 
+                                type="time" 
+                                disabled={!isEditingSettings}
+                                value={shifts[0]?.start || '09:00'} 
+                                onChange={e => updateWeeklyShift(day, 0, 'start', e.target.value)} 
+                              />
+                              <span>{t.to}</span>
+                              <input 
+                                type="time" 
+                                disabled={!isEditingSettings}
+                                value={shifts[0]?.end || '13:00'} 
+                                onChange={e => updateWeeklyShift(day, 0, 'end', e.target.value)} 
+                              />
+                            </div>
+                            {/* Shift 2 */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{ fontSize: '12px', color: 'var(--ink-soft)', minWidth: '50px' }}>{t.shift2}</span>
+                              <input 
+                                type="time" 
+                                disabled={!isEditingSettings}
+                                value={shifts[1]?.start || '14:00'} 
+                                onChange={e => updateWeeklyShift(day, 1, 'start', e.target.value)} 
+                              />
+                              <span>{t.to}</span>
+                              <input 
+                                type="time" 
+                                disabled={!isEditingSettings}
+                                value={shifts[1]?.end || '18:00'} 
+                                onChange={e => updateWeeklyShift(day, 1, 'end', e.target.value)} 
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--ink)', marginTop: '1rem', marginBottom: '0.5rem' }}>{t.dailyBreaks}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: 'var(--surface)', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600' }}>{t.standardBreak}</span>
+                    <input 
+                      type="time" 
+                      disabled={!isEditingSettings}
+                      value={availabilityScheduler.breaks?.[0]?.start || '13:00'} 
+                      onChange={e => updateBreak('start', e.target.value)} 
+                    />
+                    <span>{t.to}</span>
+                    <input 
+                      type="time" 
+                      disabled={!isEditingSettings}
+                      value={availabilityScheduler.breaks?.[0]?.end || '14:00'} 
+                      onChange={e => updateBreak('end', e.target.value)} 
+                    />
+                  </div>
+
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--ink)', marginTop: '1rem', marginBottom: '0.5rem' }}>{t.vacationLeaveExceptions}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.vacationDaysPlaceholder}</label>
+                    <textarea 
+                      disabled={!isEditingSettings}
+                      value={(availabilityScheduler.vacations || []).join(', ')} 
+                      onChange={e => handleVacationsChange(e.target.value)} 
+                      rows="2" 
+                      style={{ width: '100%', resize: 'none' }} 
+                      placeholder="e.g. 2026-06-25, 2026-06-26"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.emergencyLeavesPlaceholder}</label>
+                    <textarea 
+                      disabled={!isEditingSettings}
+                      value={(availabilityScheduler.leaves || []).join(', ')} 
+                      onChange={e => handleLeavesChange(e.target.value)} 
+                      rows="2" 
+                      style={{ width: '100%', resize: 'none' }} 
+                      placeholder="e.g. 2026-07-01"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                 {!isEditingSettings ? (

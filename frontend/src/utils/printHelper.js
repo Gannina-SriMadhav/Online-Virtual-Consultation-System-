@@ -1,13 +1,13 @@
 export const printPrescription = (prescription, patientName, doctorName, age, dateStr) => {
   const printWindow = window.open('', '_blank', 'width=800,height=900');
   
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://medlink-health.org/verify-rx/${prescription.verificationCode || prescription.id}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://medconnect-health.org/verify-rx/${prescription.verificationCode || prescription.id}`;
   const displayDate = dateStr ? new Date(dateStr).toLocaleString() : new Date().toLocaleString();
 
   const htmlContent = `
     <html>
       <head>
-        <title>MediLink E-Prescription - RX-${prescription.id ? prescription.id.substring(0, 8) : 'NEW'}</title>
+        <title>MedConnect E-Prescription - RX-${prescription.id ? prescription.id.substring(0, 8) : 'NEW'}</title>
         <style>
           body {
             font-family: 'DM Sans', Arial, sans-serif;
@@ -137,14 +137,14 @@ export const printPrescription = (prescription, patientName, doctorName, age, da
           <div class="logo-area">
             <span style="font-size: 28px;">🏥</span>
             <div>
-              <div class="logo-text">MediLink Health</div>
+              <div class="logo-text">MedConnect Health</div>
               <div style="font-size: 11px; color: #64748b;">Secure Virtual Clinic Network</div>
             </div>
           </div>
           <div class="hospital-info">
-            <strong>MediLink Care HQ</strong><br/>
+            <strong>MedConnect Care HQ</strong><br/>
             75 Healthcare Blvd, Suite 400<br/>
-            Support: support@medlink-health.org
+            Support: medconnect@gmail.com
           </div>
         </div>
 
@@ -224,7 +224,7 @@ export const printPrescription = (prescription, patientName, doctorName, age, da
 export const printInvoice = (appointment, patientName, doctorName, dateStr) => {
   const printWindow = window.open('', '_blank', 'width=800,height=900');
   const displayDate = dateStr ? new Date(dateStr).toLocaleString() : new Date().toLocaleString();
-  const amount = appointment.paymentAmount || 49.00;
+  const amount = appointment.paymentAmount || 500.00;
   const transactionId = appointment.paymentTransactionId || `PAY-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
   const htmlContent = `
@@ -333,14 +333,14 @@ export const printInvoice = (appointment, patientName, doctorName, dateStr) => {
           <div class="logo-area">
             <span style="font-size: 28px;">🏥</span>
             <div>
-              <div class="logo-text">MediLink Health</div>
+              <div class="logo-text">MedConnect Health</div>
               <div style="font-size: 11px; color: #64748b;">Secure Virtual Clinic Network</div>
             </div>
           </div>
           <div class="hospital-info">
-            <strong>MediLink Care HQ</strong><br/>
+            <strong>MedConnect Care HQ</strong><br/>
             75 Healthcare Blvd, Suite 400<br/>
-            Billing Department: billing@medlink-health.org
+            Billing Department: medconnect@gmail.com
           </div>
         </div>
 
@@ -386,18 +386,18 @@ export const printInvoice = (appointment, patientName, doctorName, dateStr) => {
               </td>
               <td>1</td>
               <td><span style="color: #10b981; font-weight: bold;">PAID</span></td>
-              <td style="text-align: right; font-weight: bold;">$${amount.toFixed(2)}</td>
+              <td style="text-align: right; font-weight: bold;">₹${amount.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
 
         <div class="total-box">
-          Total Paid: $${amount.toFixed(2)}
+          Total Paid: ₹${amount.toFixed(2)}
         </div>
 
         <div class="footer-note">
           This is an electronically generated payment receipt. No physical signature is required.<br/>
-          Thank you for choosing MediLink Care Network. For refund inquiries, please submit a request through your patient settings dashboard.
+          Thank you for choosing MedConnect Care Network. For refund inquiries, please submit a request through your patient settings dashboard.
         </div>
 
         <script>
