@@ -2,6 +2,7 @@ package com.medconnect.backend.controller;
 
 import com.medconnect.backend.entity.User;
 import com.medconnect.backend.repository.UserRepository;
+import com.medconnect.backend.service.DatabaseResetService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +13,12 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DatabaseResetService databaseResetService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, DatabaseResetService databaseResetService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.databaseResetService = databaseResetService;
     }
 
     @PostMapping("/register")
@@ -62,6 +65,16 @@ public class AuthController {
             return org.springframework.http.ResponseEntity.ok("mock-jwt-token-for-" + user.getEmail() + "-role-" + user.getRole());
         } catch(Exception e) {
             return org.springframework.http.ResponseEntity.status(401).body("Invalid credentials");
+        }
+    }
+
+    @PostMapping("/reset-db")
+    public org.springframework.http.ResponseEntity<?> resetDatabase() {
+        try {
+            databaseResetService.resetAndSeed();
+            return org.springframework.http.ResponseEntity.ok("Database successfully reset and populated with clean demo data.");
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.status(500).body("Error resetting database: " + e.getMessage());
         }
     }
 }
