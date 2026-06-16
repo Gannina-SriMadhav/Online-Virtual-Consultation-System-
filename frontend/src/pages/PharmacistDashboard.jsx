@@ -233,6 +233,9 @@ const PharmacistDashboard = () => {
   });
   const [showScannerModal, setShowScannerModal] = useState(false);
 
+  const pendingRx = prescriptions.filter(p => !p.isFulfilled);
+  const archivedRx = prescriptions.filter(p => p.isFulfilled);
+
   useEffect(() => {
     if (showScannerModal) {
       const timer = setTimeout(() => {
@@ -420,9 +423,6 @@ const PharmacistDashboard = () => {
       }
     );
   };
-
-  const pendingRx = prescriptions.filter(p => !p.isFulfilled);
-  const archivedRx = prescriptions.filter(p => p.isFulfilled);
 
   return (
     <div style={{ background: 'var(--surface)', minHeight: '100vh', width: '100%', padding: '40px 20px', position: 'relative' }}>
