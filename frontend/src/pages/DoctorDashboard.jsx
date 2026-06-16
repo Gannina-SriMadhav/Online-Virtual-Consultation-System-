@@ -487,7 +487,7 @@ const DoctorDashboard = () => {
 
       if (res && res.verificationCode) {
         notifyPrescriptionIssued(patientEmail, patientPhone, doctorName, res.verificationCode);
-        addNotification("Prescription Ready", `Your digital prescription from Dr. ${doctorName} is ready. Verification code: ${res.verificationCode}`, "success");
+        addNotification("Prescription Ready", `Your digital prescription from Dr. ${doctorName} is ready. Verification code: ${res.verificationCode}`, "success", patientEmail);
       }
     } catch (err) {
       console.error(err);

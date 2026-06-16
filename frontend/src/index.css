@@ -331,4 +331,47 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+/* Login & Register top navigation bar */
+.login-top-bar {
+  position: absolute !important;
+  top: 30px !important;
+  left: 30px !important;
+  right: 30px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 15px !important;
+}
+
+@media (max-width: 480px) {
+  .login-top-bar {
+    top: 15px !important;
+    left: 15px !important;
+    right: 15px !important;
+    gap: 8px !important;
+  }
+  .login-top-bar select {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+    height: 34px !important;
+  }
+  .login-top-bar .btn-ghost {
+    padding: 0 12px !important;
+    font-size: 12px !important;
+    height: 34px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-dropdown {
+    position: fixed !important;
+    top: 60px !important;
+    left: 5% !important;
+    right: 5% !important;
+    width: 90% !important;
+    max-height: 400px !important;
+    z-index: 10000 !important;
+  }
+}
+
 

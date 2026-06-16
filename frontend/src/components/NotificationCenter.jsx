@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { getNotifications, markAllAsRead, clearNotifications } from '../utils/notifications';
 
 const NotificationCenter = () => {
-  const [notifications, setNotifications] = useState(getNotifications());
+  const userEmail = localStorage.getItem('userEmail');
+  const [notifications, setNotifications] = useState(getNotifications(userEmail));
   const [isOpen, setIsOpen] = useState(false);
 
   const updateNotifications = () => {
-    setNotifications(getNotifications());
+    setNotifications(getNotifications(userEmail));
   };
 
   useEffect(() => {
@@ -14,7 +15,7 @@ const NotificationCenter = () => {
     return () => {
       window.removeEventListener('medconnect_notification_update', updateNotifications);
     };
-  }, []);
+  }, [userEmail]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -23,7 +24,7 @@ const NotificationCenter = () => {
     if (!isOpen) {
       // Mark as read after opening
       setTimeout(() => {
-        markAllAsRead();
+        markAllAsRead(userEmail);
       }, 500);
     }
   };
@@ -70,7 +71,7 @@ const NotificationCenter = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="glass-card" style={{ 
+        <div className="glass-card notification-dropdown" style={{ 
           position: 'absolute', 
           top: '45px', 
           right: 0, 
@@ -90,7 +91,7 @@ const NotificationCenter = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
             <span style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--ink)' }}>Alerts Notification Center</span>
             <button 
-              onClick={clearNotifications}
+              onClick={() => clearNotifications(userEmail)}
               style={{ background: 'transparent', border: 'none', color: 'var(--coral)', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
             >
               Clear All

@@ -1,12 +1,13 @@
-export const getNotifications = () => {
+export const getNotifications = (email) => {
+  const key = email ? `medconnect_notifications_${email}` : 'medconnect_notifications_general';
   try {
-    return JSON.parse(localStorage.getItem('medconnect_notifications') || '[]');
+    return JSON.parse(localStorage.getItem(key) || '[]');
   } catch {
     return [];
   }
 };
 
-export const addNotification = (title, message, type = 'info') => {
+export const addNotification = (title, message, type = 'info', email = null) => {
   const newNotif = {
     id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
     title,
@@ -16,10 +17,13 @@ export const addNotification = (title, message, type = 'info') => {
     read: false
   };
 
+  const key = email || localStorage.getItem('userEmail') || 'general';
+  const storageKey = `medconnect_notifications_${key}`;
+
   try {
-    const list = getNotifications();
+    const list = getNotifications(key);
     list.unshift(newNotif);
-    localStorage.setItem('medconnect_notifications', JSON.stringify(list.slice(0, 50)));
+    localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 50)));
     
     // Dispatch custom event for real-time update in active UI components
     window.dispatchEvent(new Event('medconnect_notification_update'));
@@ -28,19 +32,21 @@ export const addNotification = (title, message, type = 'info') => {
   }
 };
 
-export const markAllAsRead = () => {
+export const markAllAsRead = (email) => {
+  const key = email ? `medconnect_notifications_${email}` : 'medconnect_notifications_general';
   try {
-    const list = getNotifications().map(n => ({ ...n, read: true }));
-    localStorage.setItem('medconnect_notifications', JSON.stringify(list));
+    const list = getNotifications(email).map(n => ({ ...n, read: true }));
+    localStorage.setItem(key, JSON.stringify(list));
     window.dispatchEvent(new Event('medconnect_notification_update'));
   } catch {
     console.error("Failed to mark notifications as read");
   }
 };
 
-export const clearNotifications = () => {
+export const clearNotifications = (email) => {
+  const key = email ? `medconnect_notifications_${email}` : 'medconnect_notifications_general';
   try {
-    localStorage.setItem('medconnect_notifications', '[]');
+    localStorage.setItem(key, '[]');
     window.dispatchEvent(new Event('medconnect_notification_update'));
   } catch {
     console.error("Failed to clear notifications");
@@ -55,16 +61,16 @@ export const clearNotifications = () => {
  */
 export const sendSimulatedEmail = (toEmail, subject, body) => {
   console.log(`[SIMULATED EMAIL SENT] To: ${toEmail} | Subject: ${subject}`);
-  addNotification(`📧 Email Sent: ${subject}`, `To: ${toEmail}\n\n${body}`, 'info');
+  addNotification(`📧 Email Sent: ${subject}`, `To: ${toEmail}\n\n${body}`, 'info', toEmail);
 };
 
 /**
  * Simulates sending an SMS notification.
  * Logs to the console and adds an in-app log entry.
  */
-export const sendSimulatedSMS = (toPhone, message) => {
+export const sendSimulatedSMS = (toPhone, message, toEmail = null) => {
   console.log(`[SIMULATED SMS SENT] To: ${toPhone} | Message: ${message}`);
-  addNotification(`📱 SMS Sent`, `To: ${toPhone}\n\n${message}`, 'info');
+  addNotification(`📱 SMS Sent`, `To: ${toPhone}\n\n${message}`, 'info', toEmail);
 };
 
 /**
@@ -96,21 +102,21 @@ export const notifyPrescriptionIssued = (userEmail, userPhone, doctorName, legit
 
   // Send SMS
   const smsText = `MedConnect: Dr. ${doctorName} issued a prescription. Your secure Handover Code is: ${legitCode}. Keep it private until claim.`;
-  sendSimulatedSMS(userPhone, smsText);
+  sendSimulatedSMS(userPhone, smsText, userEmail);
 };
 
 /**
  * Helper to dispatch SMS verification codes.
  */
-export const sendOTPVerificationSMS = (userPhone, code) => {
+export const sendOTPVerificationSMS = (userPhone, code, userEmail = null) => {
   const smsText = `MedConnect Secure: Your Two-Factor Authentication (2FA) verification code is ${code}. Valid for 5 minutes.`;
-  sendSimulatedSMS(userPhone, smsText);
+  sendSimulatedSMS(userPhone, smsText, userEmail);
 };
 
 /**
  * Helper to dispatch SMS consultation reminders.
  */
-export const sendConsultationReminderSMS = (userPhone, doctorName, dateTime) => {
+export const sendConsultationReminderSMS = (userPhone, doctorName, dateTime, userEmail = null) => {
   const smsText = `MedConnect Reminder: Your consultation with Dr. ${doctorName} starts soon on ${new Date(dateTime).toLocaleString()}. Join via your portal.`;
-  sendSimulatedSMS(userPhone, smsText);
+  sendSimulatedSMS(userPhone, smsText, userEmail);
 };

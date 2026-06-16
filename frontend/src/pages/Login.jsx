@@ -127,7 +127,7 @@ const Login = () => {
             const users = await getAllUsers();
             const me = (users || []).find(u => u.email.toLowerCase() === email.toLowerCase() || u.phoneNumber === email);
             const userPhone = me ? me.phoneNumber : 'N/A';
-            sendOTPVerificationSMS(userPhone, generatedOtp);
+            sendOTPVerificationSMS(userPhone, generatedOtp, me ? me.email : null);
           } catch (err) {
             console.error("Failed to send 2FA SMS:", err);
           }
@@ -174,15 +174,11 @@ const Login = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', background: 'var(--surface)', padding: '20px', position: 'relative' }}>
-      {/* Back Button */}
-      <div style={{ position: 'absolute', top: '40px', left: '40px' }}>
-        <Link to="/" className="btn btn-ghost" style={{ background: 'var(--white)' }}>
+      {/* Top Navigation Bar */}
+      <div className="login-top-bar">
+        <Link to="/" className="btn-ghost" style={{ background: 'var(--white)' }}>
           {t.backToHome}
         </Link>
-      </div>
-
-      {/* Language Selector */}
-      <div style={{ position: 'absolute', top: '40px', right: '40px' }}>
         <select 
           value={currentLang} 
           onChange={(e) => handleLangChange(e.target.value)} 

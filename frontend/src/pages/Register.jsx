@@ -154,15 +154,11 @@ const Register = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', background: 'var(--surface)', padding: '40px 20px', position: 'relative' }}>
       
-      {/* Back to Home Button */}
-      <div style={{ position: 'absolute', top: '40px', left: '40px' }}>
-        <Link to="/" className="btn btn-ghost" style={{ background: 'var(--white)' }}>
+      {/* Top Navigation Bar */}
+      <div className="login-top-bar">
+        <Link to="/" className="btn-ghost" style={{ background: 'var(--white)' }}>
           {t.backToHome}
         </Link>
-      </div>
-
-      {/* Language Selector */}
-      <div style={{ position: 'absolute', top: '40px', right: '40px' }}>
         <select 
           value={currentLang} 
           onChange={(e) => handleLangChange(e.target.value)} 

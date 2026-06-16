@@ -729,19 +729,15 @@ const PatientDashboard = () => {
         // Trigger Email & SMS notifications
         notifyAppointmentBooked(patientEmail, selectedDoctor?.name || 'Specialist', bookDate, bookSlot);
         const dateTimeString = `${bookDate}T${bookSlot}`;
-        sendConsultationReminderSMS(patientPhone, selectedDoctor?.name || 'Specialist', dateTimeString);
+        sendConsultationReminderSMS(patientPhone, selectedDoctor?.name || 'Specialist', dateTimeString, patientEmail);
 
         // Add Notification
-        const notifications = JSON.parse(localStorage.getItem('medconnect_notifications') || '[]');
-        notifications.unshift({
-          id: `NOTIF-${Date.now()}`,
-          title: "Free Booking Confirmed",
-          message: `Your free consultation with Dr. ${selectedDoctor?.name || 'Specialist'} is confirmed for ${bookDate} at ${bookSlot} under the 7-day fee validity.`,
-          read: false,
-          timestamp: new Date().toISOString()
-        });
-        localStorage.setItem('medconnect_notifications', JSON.stringify(notifications));
-        window.dispatchEvent(new CustomEvent('medconnect_notification_update'));
+        addNotification(
+          "Free Booking Confirmed",
+          `Your free consultation with Dr. ${selectedDoctor?.name || 'Specialist'} is confirmed for ${bookDate} at ${bookSlot} under the 7-day fee validity.`,
+          "success",
+          patientEmail
+        );
 
         setBookData({ doctorId: '', date: '' });
         setBookDate('');
@@ -784,18 +780,14 @@ const PatientDashboard = () => {
       // Trigger Email & SMS notifications
       notifyAppointmentBooked(patientEmail, checkoutDetails?.doctorName || 'Specialist', checkoutDetails?.date, checkoutDetails?.slot);
       const dateTimeString = `${checkoutDetails?.date}T${checkoutDetails?.slot}`;
-      sendConsultationReminderSMS(patientPhone, checkoutDetails?.doctorName || 'Specialist', dateTimeString);
+      sendConsultationReminderSMS(patientPhone, checkoutDetails?.doctorName || 'Specialist', dateTimeString, patientEmail);
 
-      const notifications = JSON.parse(localStorage.getItem('medconnect_notifications') || '[]');
-      notifications.unshift({
-        id: `NOTIF-${Date.now()}`,
-        title: "Booking Confirmed",
-        message: `Your virtual consultation with ${checkoutDetails?.doctorName || 'Specialist'} is confirmed for ${checkoutDetails?.date} at ${checkoutDetails?.slot}.`,
-        timestamp: new Date().toISOString(),
-        read: false
-      });
-      localStorage.setItem('medconnect_notifications', JSON.stringify(notifications));
-      window.dispatchEvent(new CustomEvent('medconnect_notification_update'));
+      addNotification(
+        "Booking Confirmed",
+        `Your virtual consultation with ${checkoutDetails?.doctorName || 'Specialist'} is confirmed for ${checkoutDetails?.date} at ${checkoutDetails?.slot}.`,
+        "success",
+        patientEmail
+      );
 
       setBookData({ doctorId: '', date: '' });
       setBookDate('');

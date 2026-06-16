@@ -82,6 +82,8 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
   const [patientName, setPatientName] = useState('Patient');
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
+  const [shouldAutoJoin, setShouldAutoJoin] = useState(false);
+  const [mediaReady, setMediaReady] = useState(false);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -127,6 +129,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
         if (localVideoRef.current) {
            localVideoRef.current.srcObject = stream;
         }
+        setMediaReady(true);
       })
       .catch(err => {
         console.error("Media devices access error:", err);
@@ -145,6 +148,14 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
         }
     };
   }, []);
+
+  // Auto-join effect when doctor is already in room and local media is ready
+  useEffect(() => {
+    if (shouldAutoJoin && mediaReady && !isJoined) {
+      handleJoin();
+      setShouldAutoJoin(false);
+    }
+  }, [shouldAutoJoin, mediaReady, isJoined]);
 
   // Update tracks when toggling
   useEffect(() => {
@@ -214,9 +225,12 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
 
   // Toggle Screen Sharing via WebRTC Track Replacement
   const handleToggleScreenShare = async () => {
-    if (isScreenSharing) {
+    if (screenStreamRef.current) {
       if (screenStreamRef.current) {
-        screenStreamRef.current.getTracks().forEach(track => track.stop());
+        screenStreamRef.current.getTracks().forEach(track => {
+          track.onended = null;
+          track.stop();
+        });
         screenStreamRef.current = null;
       }
       try {
@@ -429,7 +443,9 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
            const appt = appts.find(a => a.id === appointmentId);
            if (appt) {
              setAppointmentStatus(appt.status);
-             if (appt.status !== 'In Consultation' && appt.status !== 'COMPLETED') {
+             if (appt.status === 'In Consultation') {
+               setShouldAutoJoin(true);
+             } else if (appt.status !== 'COMPLETED') {
                // Perform check-in in database
                await updateAppointment(appointmentId, { ...appt, status: 'Checked-In' });
                setAppointmentStatus('Checked-In');
@@ -456,8 +472,8 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
            if (appt) {
              setAppointmentStatus(appt.status);
              if (appt.status === 'In Consultation') {
-               // Automatically join when doctor admits
-               handleJoin();
+               // Automatically join when doctor admits and media is ready
+               setShouldAutoJoin(true);
                clearInterval(interval);
              }
            }
@@ -527,7 +543,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
 
           if (res && res.verificationCode) {
               notifyPrescriptionIssued(patientEmail, patientPhone, doctorName, res.verificationCode);
-              addNotification("Prescription Ready", `Your digital prescription from Dr. ${doctorName} is ready. Verification code: ${res.verificationCode}`, "success");
+              addNotification("Prescription Ready", `Your digital prescription from Dr. ${doctorName} is ready. Verification code: ${res.verificationCode}`, "success", patientEmail);
           }
       } catch (err) {
           console.error("Save prescription error:", err);
@@ -621,17 +637,17 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
        <div style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%', overflow: 'hidden' }}>
           
           {/* Main Display Box depending on state */}
-          {!isDoctor && appointmentStatus === 'Checked-In' ? (
+          {!isDoctor && appointmentStatus === 'Checked-In' && !isJoined ? (
              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '40px', textAlign: 'center', height: '100%', width: '100%' }}>
-                 <div className="spinner" style={{ width: '50px', height: '50px', borderRadius: '50%', border: '4px solid var(--border)', borderTopColor: 'var(--sky)', animation: 'spin 1s linear infinite' }}></div>
-                 <h3 className="serif-text" style={{ fontSize: '2.2rem', color: 'var(--ink)' }}>Clinical Waiting Room</h3>
-                 <p style={{ color: 'var(--ink-soft)', maxWidth: '400px', fontSize: '15px' }}>
-                     You have checked in successfully. Please wait here. The doctor will admit you to the live consultation room shortly.
-                 </p>
-                 <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '12px 18px', borderRadius: '8px', color: '#991b1b', fontSize: '13px', display: 'flex', gap: '8px', alignItems: 'center', maxWidth: '500px' }}>
-                     <span>🚨</span>
-                     <span><strong>EMERGENCY NOTE:</strong> Seek emergency medical care immediately if you are experiencing chest pain, severe breathing difficulty, or stroke symptoms.</span>
-                 </div>
+                  <div className="spinner" style={{ width: '50px', height: '50px', borderRadius: '50%', border: '4px solid var(--border)', borderTopColor: 'var(--sky)', animation: 'spin 1s linear infinite' }}></div>
+                  <h3 className="serif-text" style={{ fontSize: '2.2rem', color: 'var(--ink)' }}>Clinical Waiting Room</h3>
+                  <p style={{ color: 'var(--ink-soft)', maxWidth: '400px', fontSize: '15px' }}>
+                      You have checked in successfully. Please wait here. The doctor will admit you to the live consultation room shortly.
+                  </p>
+                  <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '12px 18px', borderRadius: '8px', color: '#991b1b', fontSize: '13px', display: 'flex', gap: '8px', alignItems: 'center', maxWidth: '500px' }}>
+                      <span>🚨</span>
+                      <span><strong>EMERGENCY NOTE:</strong> Seek emergency medical care immediately if you are experiencing chest pain, severe breathing difficulty, or stroke symptoms.</span>
+                  </div>
              </div>
           ) : !isJoined ? (
              <div className="glass-card" style={{ width: '95%', maxWidth: '800px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--white)' }}>
