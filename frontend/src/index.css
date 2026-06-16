@@ -284,3 +284,51 @@ input:focus, select:focus, textarea:focus {
   100% { top: 0%; }
 }
 
+/* Live Consultation Controls Styling */
+.controls-bar {
+  position: absolute !important;
+  bottom: 30px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  transition: all 0.3s ease !important;
+  padding: 10px 20px !important;
+  display: flex !important;
+  gap: 12px !important;
+  border-radius: 50px !important;
+  z-index: 10 !important;
+  background: var(--white) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+
+.control-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: 'DM Sans', sans-serif !important;
+  transition: all 0.2s ease !important;
+}
+
+@media (max-width: 480px) {
+  .controls-bar {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+    bottom: 20px !important;
+    width: 92% !important;
+    border-radius: 30px !important;
+    justify-content: space-around !important;
+  }
+  .control-btn {
+    padding: 0 10px !important;
+    font-size: 11px !important;
+    height: 36px !important;
+    border-radius: 18px !important;
+  }
+  .round-btn {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+

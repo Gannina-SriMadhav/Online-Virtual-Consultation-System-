@@ -666,26 +666,107 @@ const PatientDashboard = () => {
     setShowModal(true);
   };
 
-  const handleBook = (e) => {
+  const getActiveValidityMessage = () => {
+    if (!bookData.doctorId || !appointments.length) return null;
+    
+    const paidAppts = appointments.filter(appt => 
+      appt.doctor?.id === bookData.doctorId && 
+      appt.paymentStatus === 'PAID' &&
+      appt.status !== 'CANCELLED'
+    );
+    
+    if (paidAppts.length === 0) return null;
+    
+    const now = new Date().getTime();
+    const activePaidAppt = paidAppts.find(appt => {
+      const paidTime = new Date(appt.appointmentDate).getTime();
+      const diffMs = now - paidTime;
+      return diffMs >= 0 && diffMs <= 7 * 24 * 60 * 60 * 1000;
+    });
+    
+    if (activePaidAppt) {
+      const expirationTime = new Date(activePaidAppt.appointmentDate).getTime() + 7 * 24 * 60 * 60 * 1000;
+      const remainingDays = Math.ceil((expirationTime - now) / (24 * 60 * 60 * 1000));
+      return `💚 7-Day Fee Validity Active! Bookings with this doctor are free until ${new Date(expirationTime).toLocaleDateString()} (${remainingDays} days remaining).`;
+    }
+    return null;
+  };
+
+  const handleBook = async (e) => {
     e.preventDefault();
     if (!bookDate || !bookSlot) {
       toast.error(t.selectDateAndSlot);
       return;
     }
     const selectedDoctor = doctors.find(d => d.id === bookData.doctorId);
-    setCheckoutDetails({
-      doctorName: selectedDoctor ? selectedDoctor.name : 'Specialist',
-      date: bookDate,
-      slot: bookSlot
+    const proposedTime = new Date(`${bookDate}T${bookSlot}`).getTime();
+    
+    // Check if they have an active paid appointment with this doctor in the last 7 days relative to the proposed time
+    const isFreeBooking = appointments.some(appt => {
+      if (appt.doctor?.id === bookData.doctorId && appt.paymentStatus === 'PAID' && appt.status !== 'CANCELLED') {
+        const paidTime = new Date(appt.appointmentDate).getTime();
+        const diffMs = proposedTime - paidTime;
+        // If proposed appointment is within 7 days (7 * 24 * 60 * 60 * 1000 ms) after the paid appointment
+        return diffMs >= 0 && diffMs <= 7 * 24 * 60 * 60 * 1000;
+      }
+      return false;
     });
-    setPendingAppointmentPayload({
-      patient: { id: patientId },
-      doctor: { id: bookData.doctorId },
-      appointmentDate: new Date(`${bookDate}T${bookSlot}`).toISOString(),
-      status: 'CONFIRMED'
-    });
-    setShowModal(false);
-    setShowCheckoutModal(true);
+
+    if (isFreeBooking) {
+      try {
+        const payload = {
+          patient: { id: patientId },
+          doctor: { id: bookData.doctorId },
+          appointmentDate: new Date(`${bookDate}T${bookSlot}`).toISOString(),
+          status: 'CONFIRMED',
+          paymentAmount: 0.0,
+          paymentTransactionId: '7_DAYS_FREE_VALIDITY',
+          paymentStatus: 'PAID'
+        };
+        await createAppointment(payload);
+        toast.success("Active fee validity found! Booked consultation for free.");
+        
+        // Trigger Email & SMS notifications
+        notifyAppointmentBooked(patientEmail, selectedDoctor?.name || 'Specialist', bookDate, bookSlot);
+        const dateTimeString = `${bookDate}T${bookSlot}`;
+        sendConsultationReminderSMS(patientPhone, selectedDoctor?.name || 'Specialist', dateTimeString);
+
+        // Add Notification
+        const notifications = JSON.parse(localStorage.getItem('medconnect_notifications') || '[]');
+        notifications.unshift({
+          id: `NOTIF-${Date.now()}`,
+          title: "Free Booking Confirmed",
+          message: `Your free consultation with Dr. ${selectedDoctor?.name || 'Specialist'} is confirmed for ${bookDate} at ${bookSlot} under the 7-day fee validity.`,
+          read: false,
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('medconnect_notifications', JSON.stringify(notifications));
+        window.dispatchEvent(new CustomEvent('medconnect_notification_update'));
+
+        setBookData({ doctorId: '', date: '' });
+        setBookDate('');
+        setBookSlot('');
+        setShowModal(false);
+        loadData();
+      } catch (err) {
+        console.error("Free booking error:", err);
+        toast.error("Failed to complete free booking.");
+      }
+    } else {
+      setCheckoutDetails({
+        doctorName: selectedDoctor ? selectedDoctor.name : 'Specialist',
+        date: bookDate,
+        slot: bookSlot
+      });
+      setPendingAppointmentPayload({
+        patient: { id: patientId },
+        doctor: { id: bookData.doctorId },
+        appointmentDate: new Date(`${bookDate}T${bookSlot}`).toISOString(),
+        status: 'CONFIRMED'
+      });
+      setShowModal(false);
+      setShowCheckoutModal(true);
+    }
   };
 
   const handlePaymentSuccess = async (transactionId, amount) => {
@@ -1258,6 +1339,12 @@ const PatientDashboard = () => {
                     {doctors.length === 0 && <option value="2">Demo Doctor (ID 2)</option>}
                   </select>
                 </div>
+
+                {getActiveValidityMessage() && (
+                  <div style={{ color: '#047857', background: '#ecfdf5', padding: '12px 16px', borderRadius: '12px', border: '1px solid #a7f3d0', fontSize: '13px', fontWeight: '500', lineHeight: '1.4', marginBottom: '0.4rem', marginTop: '-0.4rem' }}>
+                    {getActiveValidityMessage()}
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink-soft)' }}>{t.selectDate}</label>

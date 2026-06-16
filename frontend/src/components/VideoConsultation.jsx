@@ -90,6 +90,13 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
   const screenStreamRef = useRef(null);
   const activeCallRef = useRef(null);
 
+  const setLocalVideoRef = useCallback((node) => {
+    localVideoRef.current = node;
+    if (node && localStreamRef.current) {
+      node.srcObject = localStreamRef.current;
+    }
+  }, []);
+
   // Fetch Patient EHR details for the Doctor
   useEffect(() => {
     if (isDoctor && patientId) {
@@ -213,7 +220,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
         screenStreamRef.current = null;
       }
       try {
-        const webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
         const webcamVideoTrack = webcamStream.getVideoTracks()[0];
         
         if (localStreamRef.current) {
@@ -229,7 +236,15 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
         if (activeCallRef.current && activeCallRef.current.peerConnection) {
           const senders = activeCallRef.current.peerConnection.getSenders();
           const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-          if (videoSender) videoSender.replaceTrack(webcamVideoTrack);
+          if (videoSender) {
+            await videoSender.replaceTrack(webcamVideoTrack);
+          } else {
+            console.warn("Video sender not found by track kind, trying fallback...");
+            const fallbackSender = senders.find(s => s.track && s.track.kind !== 'audio');
+            if (fallbackSender) {
+              await fallbackSender.replaceTrack(webcamVideoTrack);
+            }
+          }
         }
       } catch (err) {
         console.error("Failed to restore webcam stream:", err);
@@ -259,7 +274,15 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
         if (activeCallRef.current && activeCallRef.current.peerConnection) {
           const senders = activeCallRef.current.peerConnection.getSenders();
           const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-          if (videoSender) videoSender.replaceTrack(screenVideoTrack);
+          if (videoSender) {
+            await videoSender.replaceTrack(screenVideoTrack);
+          } else {
+            console.warn("Video sender not found by track kind, trying fallback...");
+            const fallbackSender = senders.find(s => s.track && s.track.kind !== 'audio');
+            if (fallbackSender) {
+              await fallbackSender.replaceTrack(screenVideoTrack);
+            }
+          }
         }
         setIsScreenSharing(true);
         toast.success("Sharing desktop screen...");
@@ -306,7 +329,6 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
         
         // Listen for incoming media call
         peer.on('call', (call) => {
-           activeCallRef.current = call;
            call.answer(localStreamRef.current);
            call.on('stream', (remoteStream) => {
               if (remoteVideoRef.current && !remoteStreamAttachedRef.current) {
@@ -314,6 +336,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                  remoteVideoRef.current.play().catch(e => console.error("Play error:", e));
                  remoteStreamAttachedRef.current = true;
                  setRemoteStreamAttached(true);
+                 activeCallRef.current = call;
                  toast.success("Connected!");
                  if (isDoctor) {
                     addNotification("Patient Joined Call", `${patientName || 'Patient'} has entered the video consultation room.`, "success");
@@ -340,13 +363,13 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
            if (remoteStreamAttachedRef.current) return;
            const call = peer.call(targetId, localStreamRef.current);
            if (call) {
-              activeCallRef.current = call;
               call.on('stream', (remoteStream) => {
                  if (remoteVideoRef.current && !remoteStreamAttachedRef.current) {
                     remoteVideoRef.current.srcObject = remoteStream;
                     remoteVideoRef.current.play().catch(e => console.error("Play error:", e));
                     remoteStreamAttachedRef.current = true;
                     setRemoteStreamAttached(true);
+                    activeCallRef.current = call;
                     toast.success("Connected!");
                     if (isDoctor) {
                        addNotification("Patient Joined Call", `${patientName || 'Patient'} has entered the video consultation room.`, "success");
@@ -359,15 +382,17 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
            }
         };
 
-        attemptCall();
-        
-        const retryInterval = setInterval(() => {
-           if(!remoteStreamAttachedRef.current && peerInstance.current && !peerInstance.current.disconnected) {
-              attemptCall();
-           } else {
-              clearInterval(retryInterval);
-           }
-        }, 5000);
+        if (isDoctor) {
+           attemptCall();
+           
+           const retryInterval = setInterval(() => {
+              if(!remoteStreamAttachedRef.current && peerInstance.current && !peerInstance.current.disconnected) {
+                 attemptCall();
+              } else {
+                 clearInterval(retryInterval);
+              }
+           }, 5000);
+        }
      });
 
      peer.on('error', (err) => {
@@ -612,7 +637,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
              <div className="glass-card" style={{ width: '95%', maxWidth: '800px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--white)' }}>
                 <div style={{ flex: 1, minHeight: '300px', background: '#0b1220', position: 'relative' }}>
                    <video 
-                     ref={localVideoRef} 
+                     ref={setLocalVideoRef} 
                      autoPlay 
                      playsInline 
                      muted 
@@ -663,12 +688,12 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                 </div>
              </div>
           ) : (
-             <div className="video-container" style={{ display: 'flex', width: '100%', height: '100%', padding: '20px', gap: '20px', boxSizing: 'border-box', background: '#0b1220', paddingBottom: '100px' }}>
+             <div className="video-container" style={{ display: 'flex', width: '100%', height: '100%', padding: '20px', gap: '20px', boxSizing: 'border-box', background: '#0b1220', paddingBottom: '100px', position: 'relative' }}>
                 
                 {/* Local Video - Left Side (Your Video & Your Options Overlay) */}
                 <div className="glass-card video-box" style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#1e293b', borderRadius: '20px', border: '2px solid rgba(255,255,255,0.05)' }}>
                    <video 
-                      ref={localVideoRef} 
+                      ref={setLocalVideoRef} 
                       autoPlay 
                       playsInline 
                       muted 
@@ -1093,10 +1118,115 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                          </div>
                      </div>
                  )}
-                </div>
-                
-             </div>
-          )}
+                 </div>
+                 
+                 {/* Call Controls Floating Bar - Positioned at bottom center of the video-container */}
+                 <div className="glass-card controls-bar">
+                    <button 
+                      onClick={() => setMicEnabled(!micEnabled)} 
+                      className="control-btn round-btn"
+                      style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        borderRadius: '50%', 
+                        border: micEnabled ? '1.5px solid var(--sky)' : '1.5px solid #f87171', 
+                        background: micEnabled ? 'var(--sky-pale)' : '#fee2e2', 
+                        color: micEnabled ? 'var(--sky-dark)' : '#991b1b', 
+                        cursor: 'pointer', 
+                        fontSize: '1rem', 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                      title={micEnabled ? 'Mute Mic' : 'Unmute Mic'}
+                    >
+                       {micEnabled ? '🎙️' : '🔇'}
+                    </button>
+                    <button 
+                      onClick={() => setCameraEnabled(!cameraEnabled)} 
+                      className="control-btn round-btn"
+                      style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        borderRadius: '50%', 
+                        border: cameraEnabled ? '1.5px solid var(--sky)' : '1.5px solid #f87171', 
+                        background: cameraEnabled ? 'var(--sky-pale)' : '#fee2e2', 
+                        color: cameraEnabled ? 'var(--sky-dark)' : '#991b1b', 
+                        cursor: 'pointer', 
+                        fontSize: '1rem', 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                      title={cameraEnabled ? 'Disable Camera' : 'Enable Camera'}
+                    >
+                       {cameraEnabled ? '📹' : '🚫'}
+                    </button>
+                    <button 
+                      onClick={handleToggleScreenShare} 
+                      className="control-btn round-btn"
+                      style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        borderRadius: '50%', 
+                        border: isScreenSharing ? '1.5px solid var(--sky)' : '1.5px solid var(--border)', 
+                        background: isScreenSharing ? 'var(--sky-pale)' : 'var(--white)', 
+                        color: isScreenSharing ? 'var(--sky-dark)' : 'var(--ink)', 
+                        cursor: 'pointer', 
+                        fontSize: '1rem', 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center',
+                        transition: 'all 0.2s'
+                      }}
+                      title={isScreenSharing ? 'Stop Screen Sharing' : 'Share Screen'}
+                    >
+                       🖥️
+                    </button>
+                    <div style={{ width: '1px', background: 'var(--border)', margin: '0 3px' }}></div>
+                    <button 
+                      onClick={handleEndCall} 
+                      className="control-btn"
+                      style={{ 
+                        height: '40px', 
+                        borderRadius: '25px', 
+                        padding: '0 16px', 
+                        border: 'none', 
+                        background: '#ef4444', 
+                        color: 'white', 
+                        cursor: 'pointer', 
+                        fontSize: '13px', 
+                        fontWeight: '600', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '6px',
+                        boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)' 
+                      }}
+                    >
+                       📞 {isDoctor ? 'End' : 'Leave'}
+                    </button>
+                    <button 
+                      onClick={() => setShowToolsPanel(!showToolsPanel)} 
+                      className="control-btn"
+                      style={{ 
+                        height: '40px', 
+                        borderRadius: '25px', 
+                        padding: '0 16px', 
+                        border: showToolsPanel ? 'none' : '1.5px solid var(--violet)', 
+                        background: showToolsPanel ? 'var(--violet)' : 'var(--white)', 
+                        color: showToolsPanel ? 'white' : 'var(--violet)', 
+                        cursor: 'pointer', 
+                        fontSize: '13px', 
+                        fontWeight: '600'
+                      }}
+                    >
+                         🗒️ {isDoctor ? 'Tools' : 'Reports'}
+                    </button>
+                 </div>
+              </div>
+           )}
        </div>
 
         {/* AI SOAP Summary Modal Overlay (Doctors Only) */}
