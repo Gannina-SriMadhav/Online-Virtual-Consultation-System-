@@ -46,6 +46,14 @@ export const getPatientRecords = async (patientId) => {
     } catch { return []; }
 };
 
+export const getPatientPrescriptions = async (patientId) => {
+    try {
+        const res = await fetch(`${API_BASE}/prescriptions/patient/${patientId}`);
+        if (!res.ok) return [];
+        return await res.json();
+    } catch { return []; }
+};
+
 export const getAllPrescriptions = async () => {
     try {
         const res = await fetch(`${API_BASE}/prescriptions`);

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Peer from 'peerjs';
 import toast from 'react-hot-toast';
-import { completeAppointment, issuePrescription, addMedicalRecord, rateUserSession, getPatientRecords, updateAppointment, getAllUsers, getPatientAppointments } from '../api';
+import { completeAppointment, issuePrescription, addMedicalRecord, rateUserSession, getPatientRecords, getPatientPrescriptions, updateAppointment, getAllUsers, getPatientAppointments } from '../api';
 import { addNotification, notifyPrescriptionIssued } from '../utils/notifications';
 
 // Drug Interaction Engine
@@ -57,6 +57,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
 
   // Chat/File Sharing States
   const [dataConn, setDataConn] = useState(null);
+  const dataConnRef = useRef(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [typedMessage, setTypedMessage] = useState('');
 
@@ -66,6 +67,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
 
   // Patient Records / Document Sharing State
   const [patientRecords, setPatientRecords] = useState([]);
+  const [patientPrescriptions, setPatientPrescriptions] = useState([]);
   const [uploadingReport, setUploadingReport] = useState(false);
   const [newReport, setNewReport] = useState({ name: '', fileData: '' });
   
@@ -167,6 +169,7 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
 
   // Handle incoming data connection
   const initDataChannel = (conn) => {
+    dataConnRef.current = conn;
     setDataConn(conn);
     conn.on('open', () => {
       toast.success("Consultation live chat room active!");
@@ -187,6 +190,9 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }]);
         toast.success(`Received document share: ${data.fileName}`);
+      } else if (data.type === 'sync') {
+        loadRecords();
+        toast("Clinical workspace updated in real-time!", { icon: '🔄' });
       }
     });
   };
@@ -374,25 +380,32 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
 
         // Actively dial the other party
         const attemptCall = () => {
-           if (remoteStreamAttachedRef.current) return;
-           const call = peer.call(targetId, localStreamRef.current);
-           if (call) {
-              call.on('stream', (remoteStream) => {
-                 if (remoteVideoRef.current && !remoteStreamAttachedRef.current) {
-                    remoteVideoRef.current.srcObject = remoteStream;
-                    remoteVideoRef.current.play().catch(e => console.error("Play error:", e));
-                    remoteStreamAttachedRef.current = true;
-                    setRemoteStreamAttached(true);
-                    activeCallRef.current = call;
-                    toast.success("Connected!");
-                    if (isDoctor) {
-                       addNotification("Patient Joined Call", `${patientName || 'Patient'} has entered the video consultation room.`, "success");
-                    } else {
-                       addNotification("Doctor Joined Call", `Dr. ${doctorName || 'Specialist'} has joined the video consultation room.`, "success");
+           if (!remoteStreamAttachedRef.current) {
+              const call = peer.call(targetId, localStreamRef.current);
+              if (call) {
+                 call.on('stream', (remoteStream) => {
+                    if (remoteVideoRef.current && !remoteStreamAttachedRef.current) {
+                       remoteVideoRef.current.srcObject = remoteStream;
+                       remoteVideoRef.current.play().catch(e => console.error("Play error:", e));
+                       remoteStreamAttachedRef.current = true;
+                       setRemoteStreamAttached(true);
+                       activeCallRef.current = call;
+                       toast.success("Connected!");
+                       if (isDoctor) {
+                          addNotification("Patient Joined Call", `${patientName || 'Patient'} has entered the video consultation room.`, "success");
+                       } else {
+                          addNotification("Doctor Joined Call", `Dr. ${doctorName || 'Specialist'} has joined the video consultation room.`, "success");
+                       }
                     }
-                 }
-              });
-              call.on('error', () => {});
+                 });
+                 call.on('error', () => {});
+              }
+           }
+           if (!dataConnRef.current || !dataConnRef.current.open) {
+              const conn = peer.connect(targetId);
+              if (conn) {
+                 initDataChannel(conn);
+              }
            }
         };
 
@@ -400,8 +413,10 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
            attemptCall();
            
            const retryInterval = setInterval(() => {
-              if(!remoteStreamAttachedRef.current && peerInstance.current && !peerInstance.current.disconnected) {
-                 attemptCall();
+              if (peerInstance.current && !peerInstance.current.disconnected) {
+                 if (!remoteStreamAttachedRef.current || !dataConnRef.current || !dataConnRef.current.open) {
+                    attemptCall();
+                 }
               } else {
                  clearInterval(retryInterval);
               }
@@ -545,6 +560,10 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
               notifyPrescriptionIssued(patientEmail, patientPhone, doctorName, res.verificationCode);
               addNotification("Prescription Ready", `Your digital prescription from Dr. ${doctorName} is ready. Verification code: ${res.verificationCode}`, "success", patientEmail);
           }
+          loadRecords();
+          if (dataConnRef.current && dataConnRef.current.open) {
+              dataConnRef.current.send({ type: 'sync' });
+          }
       } catch (err) {
           console.error("Save prescription error:", err);
           toast.error("Failed to save prescription.");
@@ -564,6 +583,10 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
           await addMedicalRecord(payload);
           toast.success("Clinical diagnosis captured!");
           setRecordData({ diagnosis: '', treatmentPlan: '' });
+          loadRecords();
+          if (dataConnRef.current && dataConnRef.current.open) {
+              dataConnRef.current.send({ type: 'sync' });
+          }
       } catch (err) {
           console.error("Save diagnosis error:", err);
           toast.error("Failed to log diagnosis.");
@@ -573,10 +596,14 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
   const loadRecords = useCallback(async () => {
     if (patientId) {
       try {
-        const recs = await getPatientRecords(patientId);
+        const [recs, scripts] = await Promise.all([
+          getPatientRecords(patientId),
+          getPatientPrescriptions(patientId)
+        ]);
         setPatientRecords(recs || []);
+        setPatientPrescriptions(scripts || []);
       } catch (e) {
-        console.error("Failed to load patient records in call:", e);
+        console.error("Failed to load patient records/prescriptions in call:", e);
       }
     }
   }, [patientId]);
@@ -592,33 +619,36 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
   }, [isJoined, patientId, loadRecords]);
 
   const handleUploadReport = async (e) => {
-    e.preventDefault();
-    if (!newReport.fileData) {
-      toast.error("Please select a file to upload.");
-      return;
-    }
-    setUploadingReport(true);
-    try {
-      await addMedicalRecord({
-        patient: { id: patientId },
-        doctor: { id: doctorId },
-        diagnosis: `[REPORT] ${newReport.name || 'Blood Report / Document'}`,
-        treatmentPlan: 'Uploaded during live video consultation room session',
-        documentName: newReport.name || 'document',
-        documentData: newReport.fileData,
-        recordDate: new Date().toISOString()
-      });
-      toast.success("Document uploaded successfully!");
-      setNewReport({ name: '', fileData: '' });
-      const fileInput = document.getElementById('report-file-input');
-      if (fileInput) fileInput.value = '';
-      loadRecords();
-    } catch (err) {
-      console.error("Upload report error:", err);
-      toast.error("Failed to upload report.");
-    } finally {
-      setUploadingReport(false);
-    }
+      e.preventDefault();
+      if (!newReport.fileData) {
+        toast.error("Please select a file to upload.");
+        return;
+      }
+      setUploadingReport(true);
+      try {
+        await addMedicalRecord({
+          patient: { id: patientId },
+          doctor: { id: doctorId },
+          diagnosis: `[REPORT] ${newReport.name || 'Blood Report / Document'}`,
+          treatmentPlan: 'Uploaded during live video consultation room session',
+          documentName: newReport.name || 'document',
+          documentData: newReport.fileData,
+          recordDate: new Date().toISOString()
+        });
+        toast.success("Document uploaded successfully!");
+        setNewReport({ name: '', fileData: '' });
+        const fileInput = document.getElementById('report-file-input');
+        if (fileInput) fileInput.value = '';
+        loadRecords();
+        if (dataConnRef.current && dataConnRef.current.open) {
+            dataConnRef.current.send({ type: 'sync' });
+        }
+      } catch (err) {
+        console.error("Upload report error:", err);
+        toast.error("Failed to upload report.");
+      } finally {
+        setUploadingReport(false);
+      }
   };
 
   return (
@@ -740,144 +770,171 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                          <span style={{ color: 'white', fontSize: '15px', fontWeight: '500' }}>Waiting for other party to join...</span>
                       </div>
                    )}
-                   {/* Clinical Form Sliding Panel (Doctors & Patients) - Rendered outside to prevent layout clipping */}
-                 {showToolsPanel && (
-                     <div className="glass-card tools-panel" style={{ 
-                         width: '380px', display: 'flex', flexDirection: 'column', background: 'var(--white)', borderRadius: '20px', border: '1px solid var(--border)', overflow: 'hidden', height: '100%', zIndex: 20
-                     }}>
-                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-                             <span style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--ink)' }}>{isDoctor ? 'Clinical Workspace' : 'Patient Workspace'}</span>
-                             <button onClick={() => setShowToolsPanel(false)} style={{ background: 'transparent', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>Close ✕</button>
-                         </div>
-                         <div style={{ display: 'grid', gridTemplateColumns: isDoctor ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', borderBottom: '1px solid var(--border)', background: 'var(--surface-pale)' }}>
-                             {isDoctor ? (
-                                 <>
-                                     <button onClick={() => setActiveTab('prescription')} style={{ padding: '10px 4px', background: activeTab === 'prescription' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'prescription' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Prescribe</button>
-                                     <button onClick={() => setActiveTab('diagnose')} style={{ padding: '10px 4px', background: activeTab === 'diagnose' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'diagnose' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Diagnose</button>
-                                     <button onClick={() => setActiveTab('reports')} style={{ padding: '10px 4px', background: activeTab === 'reports' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'reports' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Reports</button>
-                                     <button onClick={() => setActiveTab('chat')} style={{ padding: '10px 4px', background: activeTab === 'chat' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'chat' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Chat</button>
-                                     <button onClick={() => setActiveTab('ehr')} style={{ padding: '10px 4px', background: activeTab === 'ehr' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'ehr' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>EHR</button>
-                                     <button onClick={() => setActiveTab('lab')} style={{ padding: '10px 4px', background: activeTab === 'lab' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'lab' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Lab Test</button>
-                                 </>
-                             ) : (
-                                 <>
-                                     <button onClick={() => setActiveTab('reports')} style={{ padding: '12px 6px', background: activeTab === 'reports' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'reports' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Reports</button>
-                                     <button onClick={() => setActiveTab('upload')} style={{ padding: '12px 6px', background: activeTab === 'upload' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'upload' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Upload</button>
-                                     <button onClick={() => setActiveTab('chat')} style={{ padding: '12px 6px', background: activeTab === 'chat' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'chat' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Chat</button>
-                                 </>
-                             )}
-                         </div>
-                         <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                             {activeTab === 'prescription' && isDoctor && (
-                                 <form onSubmit={handlePrescriptionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    <h3 style={{ color: 'var(--ink)', margin: 0 }} className="serif-text">Add E-Prescription</h3>
-                                    <textarea placeholder="Medication Details (e.g., Aspirin, Ibuprofen, Warfarin)" required value={prescriptionData.medicationDetails} onChange={(e) => setPrescriptionData({...prescriptionData, medicationDetails: e.target.value})} style={{ padding: '12px', borderRadius: '8px', minHeight: '85px', width: '100%', resize: 'none' }}></textarea>
-                                    
-                                    {drugInteractionWarning && (
-                                        <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.08)', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #fca5a5', fontSize: '12px', fontWeight: '600', lineHeight: '1.4' }}>
-                                            ⚠️ {drugInteractionWarning}
-                                            <div style={{ fontSize: '10px', color: 'var(--ink-soft)', marginTop: '4px', fontStyle: 'italic', fontWeight: 'normal' }}>
-                                                Data Source: Static rule matching cross-referenced with OpenFDA dataset and DrugBank API guidelines.
-                                            </div>
-                                        </div>
-                                    )}
+                </div>
 
-                                    <textarea placeholder="Usage Instructions (e.g., Twice daily after meals)" required value={prescriptionData.instructions} onChange={(e) => setPrescriptionData({...prescriptionData, instructions: e.target.value})} style={{ padding: '12px', borderRadius: '8px', minHeight: '85px', width: '100%', resize: 'none' }}></textarea>
-                                    <button type="submit" className="glow-button" style={{ marginTop: '10px' }}>Issue Prescription</button>
-                                 </form>
-                             )}
-                             {activeTab === 'diagnose' && isDoctor && (
-                                 <form onSubmit={handleDiagnosisSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    <h3 style={{ color: 'var(--ink)', margin: 0 }} className="serif-text">Clinical Record</h3>
-                                    <textarea placeholder="Official Diagnosis" required value={recordData.diagnosis} onChange={(e) => setRecordData({...recordData, diagnosis: e.target.value})} style={{ padding: '12px', borderRadius: '8px', minHeight: '85px', width: '100%', resize: 'none' }}></textarea>
-                                    <textarea placeholder="Recommended Treatment Plan" required value={recordData.treatmentPlan} onChange={(e) => setRecordData({...recordData, treatmentPlan: e.target.value})} style={{ padding: '12px', borderRadius: '8px', minHeight: '85px', width: '100%', resize: 'none' }}></textarea>
-                                    <button type="submit" className="glow-button" style={{ marginTop: '10px' }}>Save Log</button>
-                                 </form>
-                             )}
-                             {activeTab === 'reports' && (
-                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                     <h3 style={{ color: 'var(--ink)', margin: 0 }} className="serif-text">Patient Documents</h3>
-                                     {patientRecords.length === 0 ? (
-                                         <p style={{ color: 'var(--ink-muted)', fontSize: '13px' }}>No records or reports uploaded yet.</p>
-                                     ) : (
-                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                             {patientRecords.map((rec) => (
-                                                 <div key={rec.id} style={{ padding: '12px', background: 'var(--surface)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                                                     <div style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--ink)' }}>
-                                                         {rec.documentName ? `📄 ${rec.documentName}` : `📝 Diagnosis: ${rec.diagnosis}`}
-                                                     </div>
-                                                     {rec.documentName && (
-                                                         <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '4px' }}>
-                                                             Uploaded: {new Date(rec.recordDate).toLocaleString()}
-                                                         </div>
-                                                     )}
-                                                     {rec.treatmentPlan && !rec.documentName && (
-                                                         <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '4px' }}>
-                                                             {rec.treatmentPlan}
-                                                         </div>
-                                                     )}
-                                                     {rec.documentData && (
-                                                         <a 
-                                                           href={rec.documentData} 
-                                                           download={rec.documentName || 'report'} 
-                                                           style={{ 
-                                                             display: 'inline-block',
-                                                             marginTop: '8px',
-                                                             padding: '6px 12px',
-                                                             background: 'var(--sky-pale)',
-                                                             color: 'var(--sky-dark)',
-                                                             borderRadius: '6px',
-                                                             fontSize: '12px',
-                                                             fontWeight: '600',
-                                                             textDecoration: 'none'
-                                                           }}
-                                                         >
-                                                           📥 View Document
-                                                         </a>
-                                                     )}
-                                                 </div>
-                                             ))}
-                                         </div>
-                                     )}
-                                 </div>
-                             )}
-                             {activeTab === 'upload' && !isDoctor && (
-                                 <form onSubmit={handleUploadReport} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    <h3 style={{ color: 'var(--ink)', margin: 0 }} className="serif-text">Upload Document</h3>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--ink-soft)' }}>Document Description</label>
-                                        <input 
-                                          type="text" 
-                                          placeholder="e.g. Blood Report May 2026" 
-                                          required 
-                                          value={newReport.name} 
-                                          onChange={(e) => setNewReport({...newReport, name: e.target.value})} 
-                                          style={{ width: '100%' }}
-                                        />
+                {/* Clinical Form Sliding Panel (Doctors & Patients) - Rendered outside to prevent layout clipping */}
+                {showToolsPanel && (
+                    <div className="glass-card tools-panel" style={{ 
+                        width: '380px', display: 'flex', flexDirection: 'column', background: 'var(--white)', borderRadius: '20px', border: '1px solid var(--border)', overflow: 'hidden', height: '100%', zIndex: 20
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--ink)' }}>{isDoctor ? 'Clinical Workspace' : 'Patient Workspace'}</span>
+                            <button onClick={() => setShowToolsPanel(false)} style={{ background: 'transparent', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>Close ✕</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: isDoctor ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)', borderBottom: '1px solid var(--border)', background: 'var(--surface-pale)' }}>
+                            {isDoctor ? (
+                                <>
+                                    <button onClick={() => setActiveTab('prescription')} style={{ padding: '10px 4px', background: activeTab === 'prescription' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'prescription' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Prescribe</button>
+                                    <button onClick={() => setActiveTab('diagnose')} style={{ padding: '10px 4px', background: activeTab === 'diagnose' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'diagnose' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Diagnose</button>
+                                    <button onClick={() => setActiveTab('reports')} style={{ padding: '10px 4px', background: activeTab === 'reports' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'reports' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Reports</button>
+                                    <button onClick={() => setActiveTab('chat')} style={{ padding: '10px 4px', background: activeTab === 'chat' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'chat' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Chat</button>
+                                    <button onClick={() => setActiveTab('ehr')} style={{ padding: '10px 4px', background: activeTab === 'ehr' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'ehr' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>EHR</button>
+                                    <button onClick={() => setActiveTab('lab')} style={{ padding: '10px 4px', background: activeTab === 'lab' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'lab' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Lab Test</button>
+                                </>
+                            ) : (
+                                <>
+                                    <button onClick={() => setActiveTab('reports')} style={{ padding: '12px 6px', background: activeTab === 'reports' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'reports' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Reports</button>
+                                    <button onClick={() => setActiveTab('chat')} style={{ padding: '12px 6px', background: activeTab === 'chat' ? 'var(--surface)' : 'transparent', border: 'none', color: activeTab === 'chat' ? 'var(--sky-dark)' : 'var(--ink-soft)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Chat</button>
+                                </>
+                            )}
+                        </div>
+                        <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            {activeTab === 'prescription' && isDoctor && (
+                                <form onSubmit={handlePrescriptionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                   <h3 style={{ color: 'var(--ink)', margin: 0 }} className="serif-text">Add E-Prescription</h3>
+                                   <textarea placeholder="Medication Details (e.g., Aspirin, Ibuprofen, Warfarin)" required value={prescriptionData.medicationDetails} onChange={(e) => setPrescriptionData({...prescriptionData, medicationDetails: e.target.value})} style={{ padding: '12px', borderRadius: '8px', minHeight: '85px', width: '100%', resize: 'none' }}></textarea>
+                                   
+                                   {drugInteractionWarning && (
+                                       <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.08)', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #fca5a5', fontSize: '12px', fontWeight: '600', lineHeight: '1.4' }}>
+                                           ⚠️ {drugInteractionWarning}
+                                           <div style={{ fontSize: '10px', color: 'var(--ink-soft)', marginTop: '4px', fontStyle: 'italic', fontWeight: 'normal' }}>
+                                               Data Source: Static rule matching cross-referenced with OpenFDA dataset and DrugBank API guidelines.
+                                           </div>
+                                       </div>
+                                   )}
+
+                                   <textarea placeholder="Usage Instructions (e.g., Twice daily after meals)" required value={prescriptionData.instructions} onChange={(e) => setPrescriptionData({...prescriptionData, instructions: e.target.value})} style={{ padding: '12px', borderRadius: '8px', minHeight: '85px', width: '100%', resize: 'none' }}></textarea>
+                                   <button type="submit" className="glow-button" style={{ marginTop: '10px' }}>Issue Prescription</button>
+                                </form>
+                            )}
+                            {activeTab === 'diagnose' && isDoctor && (
+                                <form onSubmit={handleDiagnosisSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                   <h3 style={{ color: 'var(--ink)', margin: 0 }} className="serif-text">Clinical Record</h3>
+                                   <textarea placeholder="Official Diagnosis" required value={recordData.diagnosis} onChange={(e) => setRecordData({...recordData, diagnosis: e.target.value})} style={{ padding: '12px', borderRadius: '8px', minHeight: '85px', width: '100%', resize: 'none' }}></textarea>
+                                   <textarea placeholder="Recommended Treatment Plan" required value={recordData.treatmentPlan} onChange={(e) => setRecordData({...recordData, treatmentPlan: e.target.value})} style={{ padding: '12px', borderRadius: '8px', minHeight: '85px', width: '100%', resize: 'none' }}></textarea>
+                                   <button type="submit" className="glow-button" style={{ marginTop: '10px' }}>Save Log</button>
+                                </form>
+                            )}
+                            {activeTab === 'reports' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                                    <h3 style={{ color: 'var(--ink)', margin: 0 }} className="serif-text">Patient Documents & Records</h3>
+                                    
+                                    {/* Document Upload section */}
+                                    <div style={{ background: 'var(--surface)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                        <h4 style={{ color: 'var(--ink)', margin: '0 0 8px 0', fontSize: '13px', fontWeight: 'bold' }}>📤 Share New Document</h4>
+                                        <form onSubmit={handleUploadReport} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                           <input 
+                                             type="text" 
+                                             placeholder="Description (e.g. Blood Report)" 
+                                             required 
+                                             value={newReport.name} 
+                                             onChange={(e) => setNewReport({...newReport, name: e.target.value})} 
+                                             style={{ width: '100%', padding: '6px 10px', fontSize: '12px', height: '32px' }}
+                                           />
+                                           <input 
+                                             id="report-file-input"
+                                             type="file" 
+                                             required 
+                                             onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if(file) {
+                                                   const reader = new FileReader();
+                                                   reader.onloadend = () => setNewReport(prev => ({ ...prev, name: prev.name || file.name, fileData: reader.result }));
+                                                   reader.readAsDataURL(file);
+                                                }
+                                             }} 
+                                             style={{ border: 'none', padding: '0', background: 'transparent', fontSize: '11px', height: 'auto' }} 
+                                           />
+                                           <button type="submit" disabled={uploadingReport} className="glow-button" style={{ marginTop: '4px', padding: '6px 12px', fontSize: '12px', height: '32px' }}>
+                                               {uploadingReport ? 'Uploading...' : 'Upload & Sync Live'}
+                                           </button>
+                                        </form>
                                     </div>
+
+                                    {/* Prescriptions Section */}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--ink-soft)' }}>Choose File (PDF/Image)</label>
-                                        <input 
-                                          id="report-file-input"
-                                          type="file" 
-                                          required 
-                                          onChange={(e) => {
-                                             const file = e.target.files[0];
-                                             if(file) {
-                                                const reader = new FileReader();
-                                                reader.onloadend = () => setNewReport(prev => ({ ...prev, name: prev.name || file.name, fileData: reader.result }));
-                                                reader.readAsDataURL(file);
-                                             }
-                                          }} 
-                                          style={{ border: 'none !important', padding: '0 !important', background: 'transparent !important' }} 
-                                        />
+                                        <h4 style={{ color: 'var(--ink)', margin: '5px 0', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📜 Prescriptions</h4>
+                                        {patientPrescriptions.length === 0 ? (
+                                            <p style={{ color: 'var(--ink-muted)', fontSize: '12px', margin: 0 }}>No prescriptions issued yet.</p>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {patientPrescriptions.map((rx) => (
+                                                    <div key={rx.id} style={{ padding: '10px 12px', background: 'var(--surface)', borderRadius: '8px', border: '1px solid var(--border)', borderLeft: '4px solid var(--sky)' }}>
+                                                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--ink)' }}>
+                                                            💊 {rx.medicationDetails}
+                                                        </div>
+                                                        <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '2px' }}>
+                                                            {rx.instructions}
+                                                        </div>
+                                                        <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
+                                                            <span>Code: <code>{rx.verificationCode || 'N/A'}</code></span>
+                                                            <span>{rx.issuedAt ? new Date(rx.issuedAt).toLocaleDateString() : ''}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                    <button type="submit" disabled={uploadingReport} className="glow-button" style={{ marginTop: '10px' }}>
-                                        {uploadingReport ? 'Uploading...' : 'Upload & Sync Live'}
-                                    </button>
-                                 </form>
-                             )}
-                             {activeTab === 'chat' && (
+
+                                    {/* Medical Records Section */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <h4 style={{ color: 'var(--ink)', margin: '5px 0', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📄 Medical History & Reports</h4>
+                                        {patientRecords.length === 0 ? (
+                                            <p style={{ color: 'var(--ink-muted)', fontSize: '12px', margin: 0 }}>No clinical history or reports found.</p>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {patientRecords.map((rec) => (
+                                                    <div key={rec.id} style={{ padding: '10px 12px', background: 'var(--surface)', borderRadius: '8px', border: '1px solid var(--border)', borderLeft: '4px solid var(--violet)' }}>
+                                                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--ink)' }}>
+                                                            {rec.documentName ? `📄 ${rec.documentName}` : `📝 Diagnosis: ${rec.diagnosis}`}
+                                                        </div>
+                                                        {rec.documentName && (
+                                                            <div style={{ fontSize: '11px', color: 'var(--ink-soft)', marginTop: '2px' }}>
+                                                                Uploaded: {new Date(rec.recordDate).toLocaleString()}
+                                                            </div>
+                                                        )}
+                                                        {rec.treatmentPlan && !rec.documentName && (
+                                                            <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '2px' }}>
+                                                                Plan: {rec.treatmentPlan}
+                                                            </div>
+                                                        )}
+                                                        {rec.documentData && (
+                                                            <a 
+                                                              href={rec.documentData} 
+                                                              download={rec.documentName || 'report'} 
+                                                              style={{ 
+                                                                display: 'inline-block',
+                                                                marginTop: '6px',
+                                                                padding: '4px 10px',
+                                                                background: 'var(--sky-pale)',
+                                                                color: 'var(--sky-dark)',
+                                                                borderRadius: '4px',
+                                                                fontSize: '11px',
+                                                                fontWeight: '600',
+                                                                textDecoration: 'none'
+                                                              }}
+                                                            >
+                                                              📥 View Document
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                            {activeTab === 'chat' && (
                                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}>
                                      <h3 style={{ color: 'var(--ink)', margin: 0, marginBottom: '10px' }} className="serif-text">Live Call Chat</h3>
                                      <div style={{ flex: 1, minHeight: '180px', maxHeight: '280px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px', background: 'var(--surface)', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -1019,6 +1076,10 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                                                      recordDate: new Date().toISOString()
                                                  });
                                                  toast.success("Lab tests ordered successfully!");
+                                                 loadRecords();
+                                                 if (dataConnRef.current && dataConnRef.current.open) {
+                                                     dataConnRef.current.send({ type: 'sync' });
+                                                 }
                                              } catch (err) {
                                                  console.error("Lab order submit error:", err);
                                                  toast.error("Failed to submit lab order.");
@@ -1033,7 +1094,6 @@ const VideoConsultation = ({ appointmentId, patientId, doctorId, isDoctor, onClo
                          </div>
                      </div>
                  )}
-                 </div>
                  
                  {/* Call Controls Floating Bar - Positioned at bottom center of the video-container */}
                  <div className="glass-card controls-bar">
